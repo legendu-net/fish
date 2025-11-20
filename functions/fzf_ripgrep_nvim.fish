@@ -16,7 +16,7 @@ function fzf_ripgrep_nvim
 
     set -l search_path .
     if test (count $argv) -gt 0
-      set search_path "$argv"
+      set search_path $argv
     end
 
     set -l reload "reload:rg --column --color=always --smart-case {q} $search_path || :"

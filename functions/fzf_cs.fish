@@ -18,10 +18,10 @@ function fzf_cs
 
     set -l search_path .
     if test (count $argv) -gt 0
-        set search_path "$argv"
+        set search_path $argv
     end
 
-    cd ($fd --type d --print0 --hidden . "$search_path" | fzf --read0)
+    cd ($fd --type d --print0 --hidden . $search_path | fzf --read0)
     ls
 end
 

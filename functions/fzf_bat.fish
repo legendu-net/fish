@@ -13,16 +13,22 @@ function fzf_bat
         return 0
     end
 
-    set -l fd (get_fd_executable)
-    check_fdfind $fd; or return 1
+    set -l cmd nvim
+    argparse c/cmd -- $argv
+    if set -q _flag_cmd
+        set cmd $_flag_cmd
+    end
 
     set -l search_path .
     if test (count $argv) -gt 0
-      set search_path "$argv"
+      set search_path $argv
     end
 
-    set -l files ($fd --type f --print0 --hidden . "$search_path" | fzf -m --read0 --preview 'bat --color=always {}')
-    history append "nvim $files"
-    nvim $files
+    set -l fd (get_fd_executable)
+    check_fdfind $fd; or return 1
+
+    set -l files ($fd --type f --print0 --hidden . $search_path | fzf -m --read0 --preview 'bat --color=always {}')
+    history append "$cmd $files"
+    $cmd $files
 end
 
