@@ -2,7 +2,7 @@ prog: "ldc"
 positionals:
   - number: 1
     repeatable: false
-    complete: ["choices", ["dclong/jupyterhub-ds", "dclong/vscode-server"]]
+    complete: ["choices", ["dclong/jupyterlab", "dclong/jupyterhub-ds", "dclong/vscode-server"]]
 options:
   - option_strings: ["-d", "--detach"]
     help: "Run container in background and print container ID."
