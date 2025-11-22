@@ -1,0 +1,41 @@
+prog: "ldc"
+positionals:
+  - number: 1
+    repeatable: false
+    complete: ["choices", ["dclong/jupyterhub-ds", "dclong/vscode-server"]]
+options:
+  - option_strings: ["-d", "--detach"]
+    help: "Run container in background and print container ID."
+
+  - option_strings: ["--docker-in-docker"]
+    help: "Mount docker.sock to allow running Docker in Docker containers."
+
+  - option_strings: ["--dry-run"]
+    help: "Print out the docker command without running it."
+
+  - option_strings: ["--extra-port-mappings"]
+    metavar: "strings"
+    help: "Extra port mappings."
+    complete: ["none"]
+
+  - option_strings: ["-h", "--help"]
+    help: "help for ldc"
+
+  - option_strings: ["-m", "--mount-home"]
+    help: "Mount /home on the host as /home_host in the Docker container."
+
+  - option_strings: ["-P", "--password"]
+    metavar: "string"
+    help: "The default password for the user (to create in the Docker container)."
+    complete: ["none"]
+
+  - option_strings: ["-p", "--port"]
+    metavar: "int"
+    help: "The port on the Docker host to forward to the port inside the Docker container."
+    complete: ["none"]
+
+  - option_strings: ["-u", "--user"]
+    metavar: "string"
+    help: "The user to create in the Docker container."
+    complete: ["none"]
+
