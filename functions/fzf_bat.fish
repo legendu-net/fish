@@ -1,8 +1,10 @@
 function _fzf_bat_usage
   echo "Search for files (previewing in bat) using fzf and edit them in NeoVim.
-Syntax: fzf_bat [-h] [dir]
+Syntax: fzf_bat [-h/--help] [-c/--cmd command] [dir]
 Args:
-  dir: The directory (default to .) under which to search for files.
+    -h/--help: Show the help doc.
+    -c/--cmd command: Run command (default nvim) on th file.
+    dir: The directory (default to .) under which to search for files.
 "
 end
 
