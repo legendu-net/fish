@@ -9,14 +9,13 @@ Args:
 end
 
 function fzf_bat
-    argparse h/help -- $argv
+    argparse "h/help" "c/cmd=" -- $argv
     if set -q _flag_help
         _fzf_bat_usage
         return 0
     end
 
     set -l cmd nvim
-    argparse c/cmd -- $argv
     if set -q _flag_cmd
         set cmd $_flag_cmd
     end
