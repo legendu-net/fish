@@ -1,16 +1,17 @@
 function _fzf_bat_usage
   echo "Search for files (previewing in bat) using fzf and edit them in NeoVim.
-Syntax: fzf_bat [-h/--help] [-c/--cmd command] [-t/--type filetype] [dir]
+Syntax: fzf_bat [-h/--help] [-c/--cmd command] [-v/--vim] [-t/--type filetype] [dir]
 Args:
     -h/--help: Show the help doc.
-    -c/--cmd command: Run command (default nvim) on th file.
+    -c/--cmd command: Run command (default nvim) on the file.
+    -v/--vim: Edit the file using NeoVim (override -c/--cmd).
     -t/--type filetype: The -t/--type option of the fd command.
     dir: The directory (default to .) under which to search for files.
 "
 end
 
 function fzf_bat
-    argparse "h/help" "c/cmd=" "t/type=" -- $argv
+    argparse "h/help" "v/vim" "c/cmd=" "t/type=" -- $argv
     if set -q _flag_help
         _fzf_bat_usage
         return 0
@@ -19,6 +20,9 @@ function fzf_bat
     set -l cmd ls
     if set -q _flag_cmd
         set cmd $_flag_cmd
+    end
+    if set -q _flag_vim
+        set cmd nvim
     end
 
     set -l search_path .
