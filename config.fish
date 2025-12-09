@@ -7,6 +7,7 @@ if status is-interactive
         $HOME/Library/Python/3.*/bin/ \
         /usr/local/*/bin/ \
         /opt/*/bin/
+    fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS/
 
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
