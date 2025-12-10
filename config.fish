@@ -1,6 +1,14 @@
 if status is-interactive
-    set -g EDITOR nvim
-    set -g VISUAL nvim
+    if command -q nvim
+        set -g EDITOR nvim
+        set -g VISUAL nvim
+    else if command -q vim
+        set -g EDITOR vim
+        set -g VISUAL vim
+    else if command -q vi
+        set -g EDITOR vi
+        set -g VISUAL vi
+    end
 
     set fish_user_paths $HOME/*/bin/ \
         $HOME/.*/bin/ \
@@ -9,6 +17,8 @@ if status is-interactive
         /opt/*/bin/
     fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS/
 
+    abbr --add gitstatus git status
+    abbr --add gitdiff git diff
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
     abbr --add blog ./blog.py
