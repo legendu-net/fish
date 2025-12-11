@@ -19,6 +19,8 @@ if status is-interactive
 
     abbr --add gitstatus git status
     abbr --add gitdiff git diff
+    abbr --add hgstatus hg status
+    abbr --add hgdiff hg diff
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
     abbr --add blog ./blog.py
