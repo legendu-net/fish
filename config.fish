@@ -17,8 +17,10 @@ if status is-interactive
         /opt/*/bin/
     fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS/
 
+    abbr --add gitadd git add
     abbr --add gitstatus git status
     abbr --add gitdiff git diff
+    abbr --add hgadd hg add
     abbr --add hgstatus hg status
     abbr --add hgdiff hg diff
     abbr --add mvi mv -i
