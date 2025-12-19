@@ -8,6 +8,9 @@ if status is-interactive
     else if command -q vi
         set -g EDITOR vi
         set -g VISUAL vi
+    else if command -q fresh
+        set -g EDITOR fresh
+        set -g VISUAL fresh
     end
 
     set fish_user_paths $HOME/*/bin/ \
