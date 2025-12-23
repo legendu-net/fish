@@ -18,7 +18,8 @@ if status is-interactive
         $HOME/Library/Python/3.*/bin/ \
         /usr/local/*/bin/ \
         /opt/*/bin/
-    fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS/
+    fish_add_path --path --append /home/linuxbrew/.linuxbrew/bin
+    fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS
 
     abbr --add gitadd git add
     abbr --add gitstatus git status
