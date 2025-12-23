@@ -21,18 +21,23 @@ if status is-interactive
         set -g VISUAL fresh
     end
 
+    # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add gitstatus git status
     abbr --add gitdiff git diff
+    abbr --add gitcommit git commit
+    # -----------------------------------------------------
     abbr --add hgadd hg add
     abbr --add hgstatus hg status
     abbr --add hgdiff hg diff
+    abbr --add hgcommit hg commit
+    # -----------------------------------------------------
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
-    abbr --add blog ./blog.py
     abbr --add ... cd ../..
     abbr --add .... cd ../../..
     abbr --add csh cdh
+    # -----------------------------------------------------
     abbr --add fcs fzf_cs
     abbr --add fcd fzf_cs
     abbr --add fbat fzf_bat
@@ -40,5 +45,10 @@ if status is-interactive
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
     abbr --add zat "zellij attach (zellij ls -s | fzf)"
+    # -----------------------------------------------------
+    abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
+    # -----------------------------------------------------
+    abbr --add blog ./blog.py
 end
+
 
