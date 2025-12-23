@@ -1,4 +1,12 @@
 if status is-interactive
+    set fish_user_paths $HOME/*/bin/ \
+        $HOME/.*/bin/ \
+        $HOME/Library/Python/3.*/bin/ \
+        /usr/local/*/bin/ \
+        /opt/*/bin/
+    fish_add_path --path --append /home/linuxbrew/.linuxbrew/bin
+    fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS
+
     if command -q nvim
         set -g EDITOR nvim
         set -g VISUAL nvim
@@ -12,14 +20,6 @@ if status is-interactive
         set -g EDITOR fresh
         set -g VISUAL fresh
     end
-
-    set fish_user_paths $HOME/*/bin/ \
-        $HOME/.*/bin/ \
-        $HOME/Library/Python/3.*/bin/ \
-        /usr/local/*/bin/ \
-        /opt/*/bin/
-    fish_add_path --path --append /home/linuxbrew/.linuxbrew/bin
-    fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS
 
     abbr --add gitadd git add
     abbr --add gitstatus git status
