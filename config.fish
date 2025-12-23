@@ -23,14 +23,15 @@ if status is-interactive
 
     # -----------------------------------------------------
     abbr --add gitadd git add
-    abbr --add gitstatus git status
-    abbr --add gitdiff git diff
+    abbr --add gitclone git clone
     abbr --add gitcommit git commit
+    abbr --add gitdiff git diff
+    abbr --add gitstatus git status
     # -----------------------------------------------------
     abbr --add hgadd hg add
-    abbr --add hgstatus hg status
-    abbr --add hgdiff hg diff
     abbr --add hgcommit hg commit
+    abbr --add hgdiff hg diff
+    abbr --add hgstatus hg status
     # -----------------------------------------------------
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
