@@ -4,4 +4,3 @@ function check_fdfind
         return 1
     end
 end
-
