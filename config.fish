@@ -41,8 +41,8 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add fcs fzf_cs
     abbr --add fcd fzf_cs
-    abbr --add fbat fzf_bat
-    abbr --add frgvim fzf_ripgrep_nvim
+    abbr --add ffd SHELL=fish fzf_fdfind
+    abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
     abbr --add zat "zellij attach (zellij ls -s | fzf)"
