@@ -51,5 +51,3 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add blog ./blog.py
 end
-
-

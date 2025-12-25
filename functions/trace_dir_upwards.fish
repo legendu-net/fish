@@ -16,7 +16,7 @@ function trace_dir_upwards
     set -l stem (path basename "$dir")
 
     while test "$stem" != "$name"
-        if contains -- "$stem" "/" ""
+        if contains -- "$stem" / ""
             echo -e "$name is not found in $argv[1]!\n"
             return 1
         end
