@@ -24,4 +24,3 @@ function fzf_cs
     cd ($fd --type d --print0 --hidden . $search_path | fzf --read0)
     ls
 end
-

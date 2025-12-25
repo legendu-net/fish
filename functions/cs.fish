@@ -13,16 +13,16 @@ function cs
 
     set -l dir "$argv"
     if test -f "$dir"
-      set dir (path dirname "$dir")
+        set dir (path dirname "$dir")
     end
     if test "$dir" = ""
-      set dir "$HOME"
+        set dir "$HOME"
     end
 
     cd "$dir"
     if test $status -ne 0
-      echo "Failed to cd into $dir!"
-      return $status
+        echo "Failed to cd into $dir!"
+        return $status
     end
     ls --color=auto
 end

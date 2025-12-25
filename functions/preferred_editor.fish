@@ -1,5 +1,5 @@
 function _preferred_editor_usage
-  echo "Find an existing editor command in the preferred order.
+    echo "Find an existing editor command in the preferred order.
 Syntax: preferred_editor [-h/--help] [-g/--gui]
 Args:
     -h/--help: Show the help doc.
@@ -8,7 +8,7 @@ Args:
 end
 
 function preferred_editor
-    argparse "h/help" "g/gui" -- $argv
+    argparse h/help g/gui -- $argv
     if set -q _flag_help
         _preferred_editor_usage
         return 0
@@ -27,4 +27,3 @@ function preferred_editor
         end
     end
 end
-

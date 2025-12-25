@@ -8,4 +8,3 @@ function get_fd_executable
             echo fd
     end
 end
-
