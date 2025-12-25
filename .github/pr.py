@@ -57,7 +57,7 @@ def main():
         {
             "base": args.base_branch,
             "head": args.head_branch,
-            "title": f"Merge {args.head_branch} into {args.base_branch}",
+            "title": f"Merge {args.head_branch} Into {args.base_branch}",
         },
     )
 
