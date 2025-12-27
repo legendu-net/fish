@@ -27,17 +27,27 @@ if status is-interactive
     abbr --add gitcommit git commit
     abbr --add gitdiff git diff
     abbr --add gitstatus git status
+    abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
+    abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
+    abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
+    abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
     # -----------------------------------------------------
     abbr --add hgadd hg add
     abbr --add hgcommit hg commit
     abbr --add hgdiff hg diff
     abbr --add hgstatus hg status
     # -----------------------------------------------------
+    abbr --add ls.media 'ls *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
+    abbr --add ls.archive 'ls *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
+    abbr --add ls.package 'ls *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
     abbr --add ... cd ../..
     abbr --add .... cd ../../..
     abbr --add csh cdh
+    # -----------------------------------------------------
+    abbr --add rsync.progress rsync -avh --info=progress2
+    abbr --add rsync.progress.pc proxychains rsync -avh --info=progress2
     # -----------------------------------------------------
     abbr --add fcs fzf_cs
     abbr --add fcd fzf_cs
