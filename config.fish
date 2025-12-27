@@ -27,10 +27,10 @@ if status is-interactive
     abbr --add gitcommit git commit
     abbr --add gitdiff git diff
     abbr --add gitstatus git status
-    abbr --add git.submodule git submodule init && git submodule update --recursive --remote
-    abbr --add git.modified git status | grep 'modified:' | cut -d: -f2
-    abbr --add git.deleted git status | grep 'deleted:' | cut -d: -f2
-    abbr --add git.renamed git status | grep 'renamed:' | cut -d: -f2
+    abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
+    abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
+    abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
+    abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
     # -----------------------------------------------------
     abbr --add hgadd hg add
     abbr --add hgcommit hg commit
