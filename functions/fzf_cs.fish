@@ -13,11 +13,7 @@ function fzf_cs
         return 0
     end
 
-    set -l fd (get_fd_executable)
-    if test "$fd" = ""
-        printf "The command fdfind/fd is not found!\n"
-        return 1
-    end
+    set -l fd (get_fd_executable; or return 1)
 
     set -l search_path .
     if test (count $argv) -gt 0

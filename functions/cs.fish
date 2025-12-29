@@ -21,8 +21,8 @@ function cs
 
     cd "$dir"
     if test $status -ne 0
-        printf "Failed to cd into $dir!\n"
-        return $status
+        printf (set_color $fish_color_error)"Error: failed to cd into $dir!\n"(set_color normal) >&2
+        return 1
     end
     ls --color=auto
 end

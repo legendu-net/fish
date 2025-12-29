@@ -42,7 +42,7 @@ function fzf_ripgrep
                 history append "EDITOR -g $files"
                 EDITOR -g $files' | string collect)
         case "*"
-            printf "$editor is not support!\n"
+            printf (set_color $fish_color_error)"Error: $editor is not supported!\n"(set_color normal) >&2
             return 1
     end
     fzf --disabled --ansi --multi \

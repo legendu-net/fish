@@ -31,11 +31,7 @@ function fzf_fdfind
         set search_path $argv
     end
 
-    set -l fd (get_fd_executable)
-    if test "$fd" = ""
-        printf "The command fdfind/fd is not found!\n"
-        return 1
-    end
+    set -l fd (get_fd_executable; or return 1)
     if set -q _flag_type
         set -a fd --type $_flag_type
     end
