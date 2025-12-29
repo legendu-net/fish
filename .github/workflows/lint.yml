@@ -16,7 +16,9 @@ jobs:
         run: icon fish -i
       - uses: actions/checkout@v6
       - name: Check Code Formatting
-        run: fish -c 'fish_indent -c **.fish'
+        shell: fish
+        run: fish_indent -c **.fish
       - name: Lint Code
-        run: fish -c 'fish -n **.sh'
+        shell: fish
+        run: fish -n **.sh
 
