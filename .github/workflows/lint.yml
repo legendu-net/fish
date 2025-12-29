@@ -15,9 +15,6 @@ jobs:
       - name: Install the Fish Shell
         run: icon fish -i
       - uses: actions/checkout@v6
-      - name: Validate
-        shell: fish {0}
-        run: ls **.fish
       - name: Check Code Formatting
         shell: fish {0}
         run: fish_indent -c **.fish
