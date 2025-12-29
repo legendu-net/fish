@@ -1,5 +1,5 @@
 function _fzf_fdfind_usage
-    echo "Leverage fzf as the UI to search for files by name using fdfind,
+    printf "Leverage fzf as the UI to search for files by name using fdfind,
 preview it using bat, and then run external commands on open selections.
 Syntax: fzf_fdfind [-h/--help] [-c/--cmd command] [-e/--edit] [-t/--type filetype] [dir]
 Args:
@@ -31,8 +31,7 @@ function fzf_fdfind
         set search_path $argv
     end
 
-    set -l fd (get_fd_executable)
-    check_fdfind $fd; or return 1
+    set -l fd (get_fd_executable; or return 1)
     if set -q _flag_type
         set -a fd --type $_flag_type
     end

@@ -1,5 +1,5 @@
 function _trace_dir_upwards_usage
-    echo "Trace a directory upwards until the name is found.
+    printf "Trace a directory upwards until the name is found.
 Syntax: trace_dir_upwards <dir> <name>
 "
 end
@@ -17,12 +17,12 @@ function trace_dir_upwards
 
     while test "$stem" != "$name"
         if contains -- "$stem" / ""
-            echo -e "$name is not found in $argv[1]!\n"
+            printf (set_color $fish_color_error)"Error: $name is not found in $argv[1]!\n"(set_color normal) >&2
             return 1
         end
         set dir (path dirname "$dir")
         set stem (path basename "$dir")
     end
 
-    echo "$dir"
+    printf "$dir\n"
 end

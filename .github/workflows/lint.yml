@@ -1,0 +1,24 @@
+name: Lint Fish Scripts
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  lint_fish_scripts:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install icon
+        run: curl -sSL https://raw.githubusercontent.com/legendu-net/icon/main/install_icon.sh | sudo bash -
+      - name: Install the Fish Shell
+        run: icon fish -i
+      - uses: actions/checkout@v6
+      - name: Check Code Formatting
+        shell: fish {0}
+        run: fish_indent -c **.fish
+      - name: Lint Code
+        shell: fish {0}
+        run: fish -n **.fish
+

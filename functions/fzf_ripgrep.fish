@@ -1,5 +1,5 @@
 function _fzf_ripgrep_usage
-    echo "Leverage fzf as the UI to search for files by content using ripgrep,
+    printf "Leverage fzf as the UI to search for files by content using ripgrep,
 preview it using bat, and open selections using external editors.
 Syntax: fzf_ripgrep [-h] [-e/--edit] [dir]
 Args:
@@ -42,7 +42,7 @@ function fzf_ripgrep
                 history append "EDITOR -g $files"
                 EDITOR -g $files' | string collect)
         case "*"
-            echo "$editor is not support!"
+            printf (set_color $fish_color_error)"Error: $editor is not supported!\n"(set_color normal) >&2
             return 1
     end
     fzf --disabled --ansi --multi \

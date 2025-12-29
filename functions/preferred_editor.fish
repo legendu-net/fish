@@ -1,5 +1,5 @@
 function _preferred_editor_usage
-    echo "Find an existing editor command in the preferred order.
+    printf "Find an existing editor command in the preferred order.
 Syntax: preferred_editor [-h/--help] [-g/--gui]
 Args:
     -h/--help: Show the help doc.
@@ -22,8 +22,8 @@ function preferred_editor
     end
     for e in $editors
         if command -q $e
-            echo $e
-            return
+            printf $e\n
+            return 0
         end
     end
 end
