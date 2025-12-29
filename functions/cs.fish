@@ -1,5 +1,5 @@
 function _cs_usage
-    echo "Enter a directory and display its content.
+    printf "Enter a directory and display its content.
 Syntax: cs dir
 "
 end
@@ -21,7 +21,7 @@ function cs
 
     cd "$dir"
     if test $status -ne 0
-        echo "Failed to cd into $dir!"
+        printf "Failed to cd into $dir!\n"
         return $status
     end
     ls --color=auto

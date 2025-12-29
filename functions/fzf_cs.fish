@@ -1,5 +1,5 @@
 function _fzf_cs_usage
-    echo "Search for a directory using fzf, cd into it, and run ls.
+    printf "Search for a directory using fzf, cd into it, and run ls.
 Syntax: fzf_cs [-h] [dir]
 Args:
     dir: The directory (default to .) under which to search for sub directories.
@@ -14,7 +14,10 @@ function fzf_cs
     end
 
     set -l fd (get_fd_executable)
-    check_fdfind $fd; or return 1
+    if test "$fd" = ""
+        printf "The command fdfind/fd is not found!\n"
+        return 1
+    end
 
     set -l search_path .
     if test (count $argv) -gt 0
