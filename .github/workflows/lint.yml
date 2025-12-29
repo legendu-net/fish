@@ -16,12 +16,12 @@ jobs:
         run: icon fish -i
       - uses: actions/checkout@v6
       - name: Validate
-        shell: fish -c {0}
+        shell: fish {0}
         run: ls **.fish
       - name: Check Code Formatting
-        shell: fish -c {0}
+        shell: fish {0}
         run: fish_indent -c **.fish
       - name: Lint Code
-        shell: fish -c {0}
+        shell: fish {0}
         run: fish -n **.fish
 
