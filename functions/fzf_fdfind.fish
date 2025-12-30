@@ -41,13 +41,18 @@ function fzf_fdfind
                     'set -l files (cat {+f}) 
                     history append "CMD $files"
                     CMD $files' | string collect)
+    set previewer 'if test -f {1}
+                        bat --style=full --color=always {1}
+                    else
+                        ls -lha --color=auto {1}
+                    end'
     fzf --disabled --ansi --multi \
         --bind "start:$reload" --bind "change:$reload" \
         --bind "enter:execute:$opener" \
         --bind "ctrl-o:execute:$opener" \
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
         --delimiter : \
-        --preview 'bat --style=full --color=always {1}' \
+        --preview "$previewer" \
         --preview-window '~4,+{2}+4/3,<80(up)' \
         --query "$argv"
     history merge
