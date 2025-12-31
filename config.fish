@@ -49,8 +49,8 @@ if status is-interactive
     abbr --add rsync.progress rsync -avh --info=progress2
     abbr --add rsync.progress.pc proxychains rsync -avh --info=progress2
     # -----------------------------------------------------
-    abbr --add fcs fzf_cs
-    abbr --add fcd fzf_cs
+    abbr --add fcs SHELL=fish fzf_cs
+    abbr --add fcd SHELL=fish fzf_cs
     abbr --add ffd SHELL=fish fzf_fdfind
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
