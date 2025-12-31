@@ -31,4 +31,3 @@ function fzf_cs
         cs "$dir"
     end
 end
-

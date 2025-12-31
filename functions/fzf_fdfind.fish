@@ -35,13 +35,11 @@ function fzf_fdfind
     if set -q _flag_type
         set -a fd --type $_flag_type
     end
-    $fd --hidden --print0 "" $search_path | \
-        fzf --read0 --ansi --multi \
-            --bind "enter:execute:_fzf_fdfind_opener $cmd {+f}" \
-            --bind "ctrl-o:execute:_fzf_fdfind_opener $cmd {+f}" \
-            --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
-            --preview '_fzf_fdfind_previewer {1}' \
-            --preview-window '~4,+{2}+4/3,<80(up)'
+    $fd --hidden --print0 "" $search_path | fzf --read0 --ansi --multi \
+        --bind "enter:execute:_fzf_fdfind_opener $cmd {+f}" \
+        --bind "ctrl-o:execute:_fzf_fdfind_opener $cmd {+f}" \
+        --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
+        --preview '_fzf_fdfind_previewer {1}' \
+        --preview-window '~4,+{2}+4/3,<80(up)'
     history merge
 end
-

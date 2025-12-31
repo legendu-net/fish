@@ -9,4 +9,3 @@ function _fzf_fdfind_previewer
         ls -lha --color=auto "$argv[1]"
     end
 end
-
