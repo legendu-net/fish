@@ -20,6 +20,14 @@ function fzf_cs
         set search_path $argv
     end
 
-    cd ($fd --type d --print0 --hidden . $search_path | fzf --read0)
-    ls
+    # Piping fd results to fzf instead of using the trick of reload.
+    # This way fd is running only once.
+    set dir ($fd --type d --print0 --hidden "" $search_path | \
+        fzf --read0 --ansi \
+            --bind 'ctrl-/:toggle-preview' \
+            --preview '_fzf_fdfind_previewer {1}' \
+            --preview-window '~4,+{2}+4/3,<80(up)')
+    if not test "$dir" = ""
+        cs "$dir"
+    end
 end

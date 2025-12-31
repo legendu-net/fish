@@ -24,5 +24,5 @@ function cs
         printf (set_color $fish_color_error)"Error: failed to cd into $dir!\n"(set_color normal) >&2
         return 1
     end
-    ls --color=auto
+    ls -lha --color=auto
 end

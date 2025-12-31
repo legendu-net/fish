@@ -35,20 +35,11 @@ function fzf_fdfind
     if set -q _flag_type
         set -a fd --type $_flag_type
     end
-    set -l reload "reload:$fd --hidden {q} $search_path || :"
-
-    set -l opener (string replace --all CMD $cmd \
-                    'set -l files (cat {+f}) 
-                    history append "CMD $files"
-                    CMD $files' | string collect)
-    fzf --disabled --ansi --multi \
-        --bind "start:$reload" --bind "change:$reload" \
-        --bind "enter:execute:$opener" \
-        --bind "ctrl-o:execute:$opener" \
+    $fd --hidden --print0 "" $search_path | fzf --read0 --ansi --multi \
+        --bind "enter:execute:_fzf_fdfind_opener $cmd {+f}" \
+        --bind "ctrl-o:execute:_fzf_fdfind_opener $cmd {+f}" \
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
-        --delimiter : \
-        --preview 'bat --style=full --color=always {1}' \
-        --preview-window '~4,+{2}+4/3,<80(up)' \
-        --query "$argv"
+        --preview '_fzf_fdfind_previewer {1}' \
+        --preview-window '~4,+{2}+4/3,<80(up)'
     history merge
 end

@@ -24,6 +24,8 @@ function fzf_ripgrep
         set search_path $argv
     end
 
+    # HAVE TO USE THE RELOAD TRICK instead of piping rg results to fzf!
+    # Piping rg results to fzf for filtering matches patterns against file names as well.
     set -l reload "reload:rg --column --color=always --smart-case {q} $search_path || :"
     set -l opener
     switch $editor
@@ -53,6 +55,5 @@ function fzf_ripgrep
         --delimiter : \
         --preview 'bat --style=full --color=always --highlight-line {2} {1}' \
         --preview-window '~4,+{2}+4/3,<80(up)' \
-        --query "$argv"
-    history merge
+        history merge
 end
