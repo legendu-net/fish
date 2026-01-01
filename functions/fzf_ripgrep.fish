@@ -54,6 +54,6 @@ function fzf_ripgrep
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
         --delimiter : \
         --preview 'bat --style=full --color=always --highlight-line {2} {1}' \
-        --preview-window '~4,+{2}+4/3,<80(up)' \
-        history merge
+        --preview-window '~4,+{2}+4/3,<80(up)'
+    history merge
 end
