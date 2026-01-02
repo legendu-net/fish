@@ -22,7 +22,7 @@ function fzf_cs
 
     # Piping fd results to fzf instead of using the trick of reload.
     # This way fd is running only once.
-    set dir ($fd --type d --print0 --hidden "" $search_path | \
+    set dir ($fd --type d --print0 --no-ignore --hidden "" $search_path | \
         fzf --read0 --ansi \
             --bind 'ctrl-/:toggle-preview' \
             --preview '_fzf_fdfind_previewer {1}' \
