@@ -59,5 +59,11 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
+    abbr --add uv.ipython uv run --python 3.14 \
+        --with aiutil \
+        --with github_rest_api \
+        --with dockeree \
+        --with IPython \
+        python -m IPython
     abbr --add blog ./blog.py
 end
