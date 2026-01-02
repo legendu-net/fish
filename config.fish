@@ -23,10 +23,15 @@ if status is-interactive
 
     # -----------------------------------------------------
     abbr --add gitadd git add
+    abbr --add ga git add
     abbr --add gitclone git clone
+    abbr --add gcl git clone
     abbr --add gitcommit git commit
+    abbr --add gc git commit
     abbr --add gitdiff git diff
+    abbr --add gd git diff
     abbr --add gitstatus git status
+    abbr --add gs git status
     abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
