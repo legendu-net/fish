@@ -23,7 +23,7 @@ if status is-interactive
 
     # -----------------------------------------------------
     abbr --add gitadd git add
-    abbr --add ga git add
+    abbr --add ga git add .
     abbr --add gitclone git clone
     abbr --add gcl git clone
     abbr --add gitcommit git commit -m
@@ -40,6 +40,10 @@ if status is-interactive
     abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
     abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
+    # -----------------------------------------------------
+    abbr --add gol golangci-lint
+    abbr --add golf golangci-lint fmt
+    abbr --add golr golangci-lint run
     # -----------------------------------------------------
     abbr --add hgadd hg add
     abbr --add hgcommit hg commit
