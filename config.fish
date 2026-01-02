@@ -27,7 +27,7 @@ if status is-interactive
     abbr --add gitclone git clone
     abbr --add gcl git clone
     abbr --add gitcommit git commit -m
-    abbr --add gc git commit -m 
+    abbr --add gc git commit -m
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gitstatus git status
@@ -41,6 +41,8 @@ if status is-interactive
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
     abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
     # -----------------------------------------------------
+    abbr --add f 'fish -n **.fish'
+    abbr --add fi 'fish_indent -w **.fish'
     abbr --add gol golangci-lint
     abbr --add golf golangci-lint fmt
     abbr --add golr golangci-lint run
