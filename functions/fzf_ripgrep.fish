@@ -3,6 +3,8 @@ function _fzf_ripgrep_usage
 preview it using bat, and open selections using external editors.
 Syntax: fzf_ripgrep [-h] [-e/--edit] [dir]
 Args:
+    -h/--help: Show the help doc.
+    -e/--edit: Edit the file using the editor returned by `preferred_editor -g`.
     dir: The directory (default to .) under which to search for files.
 "
 end
@@ -27,30 +29,10 @@ function fzf_ripgrep
     # HAVE TO USE THE RELOAD TRICK instead of piping rg results to fzf!
     # Piping rg results to fzf for filtering matches patterns against file names as well.
     set -l reload "reload:rg --column --color=always --smart-case {q} $search_path || :"
-    set -l opener
-    switch $editor
-        case nvim vim vi
-            set opener (string replace --all EDITOR $editor \
-                            'if test "$FZF_SELECT_COUNT" = "0"
-                                history append "EDITOR {1} +{2}"
-                                EDITOR {1} +{2}
-                            else
-                                history append "EDITOR +cw -q {+f}"
-                                EDITOR +cw -q {+f}
-                            end' | string collect)
-        case code code-server
-            set opener (string replace --all EDITOR $editor \
-                'set -l files (cat {+f} | awk -F\': \' \'{print $1}\')
-                history append "EDITOR -g $files"
-                EDITOR -g $files' | string collect)
-        case "*"
-            printf (set_color $fish_color_error)"Error: $editor is not supported!\n"(set_color normal) >&2
-            return 1
-    end
     fzf --disabled --ansi --multi \
         --bind "start:$reload" --bind "change:$reload" \
-        --bind "enter:execute:$opener" \
-        --bind "ctrl-o:execute:$opener" \
+        --bind "enter:execute:_fzf_ripgrep_opener $editor {+f}" \
+        --bind "ctrl-o:execute:_fzf_ripgrep_opener $editor {+f}" \
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
         --delimiter : \
         --preview 'bat --style=full --color=always --highlight-line {2} {1}' \
