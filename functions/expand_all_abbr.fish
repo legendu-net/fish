@@ -10,4 +10,3 @@ function expand_all_abbr
 end
 
 bind ctrl-alt-space expand_all_abbr
-
