@@ -42,7 +42,7 @@ if status is-interactive
     abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
-    abbr --add fi 'fish_indent -w **.fish'
+    abbr --add fi 'fish_indent -w **.fish && git status'
     abbr --add urrc uv run ruff check
     abbr --add urrf uv run ruff format
     abbr --add urtc uv run ty check
