@@ -36,6 +36,8 @@ if status is-interactive
     abbr --add gp git push
     abbr --add gpod git push origin dev
     abbr --add gpom git push origin main
+    abbr --add gplod git pull origin dev
+    abbr --add gplom git pull origin main
     abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
@@ -64,6 +66,13 @@ if status is-interactive
         abbr --add ls.media 'ls *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
         abbr --add ls.archive 'ls *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'ls *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
+    end
+    if command -q dust
+        abbr --add du dust
+    end
+    if command -q btm
+        abbr --add top btm
+        abbr --add htop btm
     end
     abbr --add mvi mv -i
     abbr --add cpi cp -ir
