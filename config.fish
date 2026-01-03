@@ -43,6 +43,9 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
     abbr --add fi 'fish_indent -w **.fish'
+    abbr --add urrc uv run ruff check
+    abbr --add urrf uv run ruff format
+    abbr --add urtc uv run ty check
     abbr --add gol golangci-lint
     abbr --add golf golangci-lint fmt
     abbr --add golr golangci-lint run
