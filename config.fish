@@ -50,6 +50,8 @@ if status is-interactive
     abbr --add urrc uv run ruff check
     abbr --add urtc uv run ty check
     abbr --add urdc uv run deptry .
+    abbr --add urd uv run deptry .
+    abbr --add urdt uv run deptry .
     abbr --add uv.ipython uv run --python 3.14 \
         --with aiutil \
         --with github_rest_api \
