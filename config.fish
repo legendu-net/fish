@@ -45,9 +45,16 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
     abbr --add fi 'fish_indent -w **.fish && git status'
-    abbr --add urrc uv run ruff check
     abbr --add urrf uv run ruff format
+    abbr --add urrc uv run ruff check
     abbr --add urtc uv run ty check
+    abbr --add urdc uv run deptry .
+    abbr --add uv.ipython uv run --python 3.14 \
+        --with aiutil \
+        --with github_rest_api \
+        --with dockeree \
+        --with IPython \
+        python -m IPython
     abbr --add gol golangci-lint
     abbr --add golf golangci-lint fmt
     abbr --add golr golangci-lint run
@@ -93,11 +100,5 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
-    abbr --add uv.ipython uv run --python 3.14 \
-        --with aiutil \
-        --with github_rest_api \
-        --with dockeree \
-        --with IPython \
-        python -m IPython
     abbr --add blog ./blog.py
 end
