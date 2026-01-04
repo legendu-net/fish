@@ -42,6 +42,7 @@ if status is-interactive
     abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
     abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
+    abbr --add colordiff git diff --no-index
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
     abbr --add fi 'fish_indent -w **.fish && git status'
