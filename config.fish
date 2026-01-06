@@ -24,12 +24,16 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add .
+    abbr --add gitbranch git branch
+    abbr --add gb git branch
     abbr --add gitclone git clone
     abbr --add gcl git clone
     abbr --add gitcommit git commit -m
     abbr --add gc git commit -m
     abbr --add gitdiff git diff
     abbr --add gd git diff
+    abbr --add gitfetch git fetch
+    abbr --add gfo git fetch origin
     abbr --add gitstatus git status
     abbr --add gs git status
     abbr --add gitpush git push
@@ -43,6 +47,9 @@ if status is-interactive
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
     abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
     abbr --add colordiff git diff --no-index
+    abbr --add dp docker pull
+    abbr --add dpjhub docker pull dclong/jupyterhub-ds
+    abbr --add dpcs docker pull dclong/vscode-server
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
     abbr --add fi 'fish_indent -w **.fish && git status'
