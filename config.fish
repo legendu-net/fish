@@ -75,7 +75,7 @@ if status is-interactive
     abbr --add hgstatus hg status
     # -----------------------------------------------------
     if command -q eza
-        abbr --add ls eza -lha --color=auto
+        abbr --add ls eza --color=auto -lha
         abbr --add ls.media 'eza *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
         abbr --add ls.archive 'eza *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'eza *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
