@@ -22,6 +22,11 @@ if status is-interactive
     end
 
     # -----------------------------------------------------
+    if command -q nvim
+        abbr --add vim nvim
+        abbr --add vi nvim
+    end
+    # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add .
     abbr --add gitbranch git branch
@@ -34,8 +39,11 @@ if status is-interactive
     abbr --add gd git diff
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
+    abbr --add gitrestore git restore
+    abbr --add grs git restore
     abbr --add gitstatus git status
     abbr --add gs git status
+    abbr --add gsp git status --porcelain
     abbr --add gitpush git push
     abbr --add gp git push
     abbr --add gpod git push origin dev
@@ -45,9 +53,10 @@ if status is-interactive
     abbr --add gitremote git remote -v
     abbr --add gr git remote -v
     abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
-    abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
-    abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
-    abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
+    abbr --add git.modified 'git status --porcelain | grep "M " | awk -F"M " \'{print $2}\''
+    abbr --add git.deleted 'git status --porcelain | grep "D " | awk -F "D " \'{print $2}\''
+    abbr --add git.renamed 'git status --porcelain | grep "R " | awk -F "R " \'{print $2}\''
+    abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     abbr --add dp docker pull
     abbr --add dpjhub docker pull dclong/jupyterhub-ds
