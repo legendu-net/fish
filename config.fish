@@ -60,7 +60,7 @@ if status is-interactive
     abbr --add urd uv run deptry .
     abbr --add urdt uv run deptry .
     abbr --add uv.ipython uv run --python 3.14 \
-        --with aiutil \
+        --with aiutil[all] \
         --with github_rest_api \
         --with dockeree \
         --with IPython \
