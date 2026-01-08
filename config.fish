@@ -22,6 +22,11 @@ if status is-interactive
     end
 
     # -----------------------------------------------------
+    if command -q nvim
+        abbr --add vim nvim
+        abbr --add vi nvim
+    end
+    # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add .
     abbr --add gitbranch git branch
@@ -34,18 +39,27 @@ if status is-interactive
     abbr --add gd git diff
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
+    abbr --add gitrestore git restore
+    abbr --add grs git restore
     abbr --add gitstatus git status
     abbr --add gs git status
+    abbr --add gsp git status --porcelain
     abbr --add gitpush git push
     abbr --add gp git push
     abbr --add gpod git push origin dev
     abbr --add gpom git push origin main
     abbr --add gplod git pull origin dev
     abbr --add gplom git pull origin main
+    abbr --add gitremote git remote -v
+    abbr --add gr git remote -v
     abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
-    abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
-    abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
-    abbr --add git.renamed 'git status | grep 'renamed:' | cut -d: -f2'
+    abbr --add git.modified 'git status --porcelain | grep "M " | awk -F"M " \'{print $2}\''
+    abbr --add git.added 'git status --porcelain | grep "A " | awk -F"A " \'{print $2}\''
+    abbr --add git.deleted 'git status --porcelain | grep "D " | awk -F "D " \'{print $2}\''
+    abbr --add git.renamed 'git status --porcelain | grep "R " | awk -F "R " \'{print $2}\''
+    abbr --add git.copied 'git status --porcelain | grep "C " | awk -F "C " \'{print $2}\''
+    abbr --add git.unmerged 'git status --porcelain | grep "U " | awk -F "U " \'{print $2}\''
+    abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     abbr --add dp docker pull
     abbr --add dpjhub docker pull dclong/jupyterhub-ds
@@ -75,7 +89,7 @@ if status is-interactive
     abbr --add hgstatus hg status
     # -----------------------------------------------------
     if command -q eza
-        abbr --add ls eza -lha --color=auto
+        abbr --add ls eza --color=auto -lha
         abbr --add ls.media 'eza *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
         abbr --add ls.archive 'eza *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'eza *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
