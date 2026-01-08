@@ -54,8 +54,11 @@ if status is-interactive
     abbr --add gr git remote -v
     abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status --porcelain | grep "M " | awk -F"M " \'{print $2}\''
+    abbr --add git.added 'git status --porcelain | grep "A " | awk -F"A " \'{print $2}\''
     abbr --add git.deleted 'git status --porcelain | grep "D " | awk -F "D " \'{print $2}\''
     abbr --add git.renamed 'git status --porcelain | grep "R " | awk -F "R " \'{print $2}\''
+    abbr --add git.copied 'git status --porcelain | grep "C " | awk -F "C " \'{print $2}\''
+    abbr --add git.unmerged 'git status --porcelain | grep "U " | awk -F "U " \'{print $2}\''
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     abbr --add dp docker pull
