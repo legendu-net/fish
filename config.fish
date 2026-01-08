@@ -42,6 +42,8 @@ if status is-interactive
     abbr --add gpom git push origin main
     abbr --add gplod git pull origin dev
     abbr --add gplom git pull origin main
+    abbr --add gitremote git remote -v
+    abbr --add gr git remote -v
     abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status | grep 'modified:' | cut -d: -f2'
     abbr --add git.deleted 'git status | grep 'deleted:' | cut -d: -f2'
