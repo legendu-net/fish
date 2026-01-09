@@ -5,8 +5,8 @@ function _fzf_ripgrep_opener
     switch $argv[1]
         case nvim vim vi
             history append "code -g $files"
-            history append "$argv[1] +cw -q $argv[2]"
-            $argv[1] +cw -q $argv[2]
+            history append "$argv[1] -q $argv[2] +':silent cfdo edit' +':bw 1'"
+            $argv[1] -q $argv[2] +':silent cfdo edit' +':bw 1'
         case code code-server
             history append "$argv[1] -g $files"
             $argv[1] -g $files

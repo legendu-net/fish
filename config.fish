@@ -6,7 +6,7 @@ if status is-interactive
         /opt/*/bin/
     fish_add_path --path --append /home/linuxbrew/.linuxbrew/bin
     fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS
-
+    # =====================================================
     if command -q nvim
         set -g EDITOR nvim
         set -g VISUAL nvim
@@ -20,8 +20,7 @@ if status is-interactive
         set -g EDITOR fresh
         set -g VISUAL fresh
     end
-
-    # -----------------------------------------------------
+    # =====================================================
     if command -q nvim
         abbr --add vim nvim
         abbr --add vi nvim
@@ -125,4 +124,6 @@ if status is-interactive
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
     abbr --add blog ./blog.py
+    # =====================================================
+    bind ctrl-alt-space expand_all_abbr
 end
