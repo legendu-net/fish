@@ -8,4 +8,3 @@ function expand_all_abbr
         end
     end
 end
-
