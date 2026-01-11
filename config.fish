@@ -72,9 +72,9 @@ if status is-interactive
     abbr --add urdc uv run deptry .
     abbr --add urd uv run deptry .
     abbr --add urdt uv run deptry .
-    abbr --add urall uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .
-    abbr --add uvall uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .
-    abbr --add uvxall uvx ruff format && uvx ruff check
+    abbr --add urall 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
+    abbr --add uvall 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
+    abbr --add uvxall 'uvx ruff format && uvx ruff check'
     abbr --add uv.ipython uv run --python 3.14 \
         --with aiutil[all] \
         --with github_rest_api \
