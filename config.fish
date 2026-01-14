@@ -60,9 +60,13 @@ if status is-interactive
     abbr --add git.unmerged 'git status --porcelain | grep "U " | awk -F "U " \'{print $2}\''
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
+    abbr --add di docker images
     abbr --add dp docker pull
+    abbr --add ds docker stop
+    abbr --add dps docker ps
     abbr --add dpjhub docker pull dclong/jupyterhub-ds
     abbr --add dpcs docker pull dclong/vscode-server
+    abbr --add dpvsc docker pull dclong/vscode-server
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
     abbr --add fi 'fish_indent -w **.fish && git status'
