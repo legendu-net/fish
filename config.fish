@@ -126,11 +126,31 @@ if status is-interactive
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
-    abbr --add zat "zellij attach (zellij ls -s | fzf)"
+    abbr --add zat 'zellij attach (zellij ls -s | fzf)'
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
     abbr --add blog ./blog.py
+    abbr --add euporie.notebook 'euporie notebook \
+        --no-warn-venv \
+        --show-status-bar \
+        --syntax-highlighting \
+        --color-depth 24 \
+        --edit-mode vi \
+        --cursor-blink \
+        --autocomplete \
+        --autosuggest smart \
+        --line-numbers'
+    abbr --add tnb 'euporie notebook \
+        --no-warn-venv \
+        --show-status-bar \
+        --syntax-highlighting \
+        --color-depth 24 \
+        --edit-mode vi \
+        --cursor-blink \
+        --autocomplete \
+        --autosuggest smart \
+        --line-numbers'
     # =====================================================
     bind ctrl-alt-space expand_all_abbr
 end
