@@ -152,5 +152,7 @@ if status is-interactive
         --autosuggest smart \
         --line-numbers'
     # =====================================================
+    abbr --add flatpak.zed flatpak run dev.zed.Zed
+    # =====================================================
     bind ctrl-alt-space expand_all_abbr
 end
