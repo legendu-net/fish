@@ -152,5 +152,8 @@ if status is-interactive
         --autosuggest smart \
         --line-numbers'
     # =====================================================
+    abbr --add flatpak.zed flatpak run dev.zed.Zed
+    abbr --add flatpak.keepassxc flatpak run org.keepassxc.KeePassXC
+    # =====================================================
     bind ctrl-alt-space expand_all_abbr
 end
