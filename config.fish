@@ -27,7 +27,7 @@ if status is-interactive
     end
     # -----------------------------------------------------
     abbr --add gitadd git add
-    abbr --add ga git add .
+    abbr --add ga git add
     abbr --add gitbranch git branch
     abbr --add gb git branch
     abbr --add gitclone git clone
