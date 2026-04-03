@@ -130,7 +130,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
-    abbr --add blog ./blog/blog.py
+    abbr --add blog ./ui.py
     abbr --add euporie.notebook 'euporie notebook \
         --no-warn-venv \
         --show-status-bar \
