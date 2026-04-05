@@ -25,8 +25,8 @@ function cs
         return 1
     end
     if command -q eza
-        eza -lha --color=auto
+        eza -lh --color=auto
     else
-        ls -lha --color=auto
+        ls -lh --color=auto
     end
 end
