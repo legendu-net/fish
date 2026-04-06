@@ -36,6 +36,7 @@ if status is-interactive
     abbr --add gc git commit -m
     abbr --add gitdiff git diff
     abbr --add gd git diff
+    abbr --add gdni git diff --no-index
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
     abbr --add gitrestore git restore
