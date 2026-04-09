@@ -69,9 +69,9 @@ if status is-interactive
     abbr --add dpcs docker pull dclong/vscode-server
     abbr --add dpvsc docker pull dclong/vscode-server
     # -----------------------------------------------------
-    abbr --add f 'fish -n **.fish'
-    abbr --add fi 'fish_indent -w **.fish && git status'
-    abbr --add urmf uv run mdformat --number 
+    abbr --add f 'fish --no-execute **.fish'
+    abbr --add fi 'fish_indent --write **.fish && git status'
+    abbr --add urmf uv run mdformat --number
     abbr --add urrf uv run ruff format
     abbr --add urrc uv run ruff check
     abbr --add urtc uv run ty check
