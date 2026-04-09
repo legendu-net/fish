@@ -131,6 +131,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
+    abbr --add jvim.enable icon jvim --sudo --enable
     abbr --add blog ./blog.py
     abbr --add euporie.notebook 'euporie notebook \
         --no-warn-venv \
