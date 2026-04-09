@@ -71,6 +71,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish -n **.fish'
     abbr --add fi 'fish_indent -w **.fish && git status'
+    abbr --add urmf uv run mdformat
     abbr --add urrf uv run ruff format
     abbr --add urrc uv run ruff check
     abbr --add urtc uv run ty check
