@@ -24,6 +24,7 @@ if status is-interactive
     if command -q nvim
         abbr --add vim nvim
         abbr --add vi nvim
+        abbr --add vim.gi nvim .gitignore
     end
     # -----------------------------------------------------
     abbr --add mkdir.wf mkdir -p .github/workflows/
