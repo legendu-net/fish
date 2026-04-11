@@ -62,6 +62,8 @@ if status is-interactive
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     abbr --add di docker images
+    abbr --add dri docker rmi
+    abbr --add dr docker rm
     abbr --add dp docker pull
     abbr --add ds docker stop
     abbr --add dps docker ps
