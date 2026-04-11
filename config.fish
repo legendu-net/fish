@@ -26,6 +26,7 @@ if status is-interactive
         abbr --add vi nvim
     end
     # -----------------------------------------------------
+    abbr --add mkdir.wf mkdir -p .github/workflows/
     abbr --add gitadd git add
     abbr --add ga git add
     abbr --add gitbranch git branch
