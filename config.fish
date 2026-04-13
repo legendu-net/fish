@@ -27,7 +27,8 @@ if status is-interactive
         abbr --add vim.gi nvim .gitignore
     end
     # -----------------------------------------------------
-    abbr --add mkdir.wf mkdir -p .github/workflows/
+    abbr --add mkdir.workflow mkdir -p .github/workflows/
+    abbr --add mkdir.zz_deprecated mkdir zz_deprecated/
     abbr --add gitadd git add
     abbr --add ga git add
     abbr --add gitbranch git branch
@@ -75,16 +76,14 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish --no-execute **.fish'
     abbr --add fi 'fish_indent --write **.fish && git status'
-    abbr --add urmf uv run mdformat
-    abbr --add urrf uv run ruff format
-    abbr --add urrc uv run ruff check
-    abbr --add urtc uv run ty check
-    abbr --add urdc uv run deptry .
-    abbr --add urd uv run deptry .
-    abbr --add urdt uv run deptry .
-    abbr --add urall 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
-    abbr --add uvall 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
-    abbr --add uvxall 'uvx ruff format && uvx ruff check'
+    abbr --add uv.mdformat uv run mdformat
+    abbr --add uv.ruff.format uv run ruff format
+    abbr --add uv.ruff.check uv run ruff check
+    abbr --add uv.ty.check uv run ty check
+    abbr --add uv.deptry uv run deptry .
+    abbr --add uv.lint.python 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
+    abbr --add uvx.lint.python 'uvx ruff format && uvx ruff check'
+    abbr --add uv.jb.start NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book start
     abbr --add uv.ipython uv run --python 3.14 \
         --with aiutil[all] \
         --with github_rest_api \
