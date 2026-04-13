@@ -28,6 +28,8 @@ if status is-interactive
     end
     # -----------------------------------------------------
     abbr --add mkdir.wf mkdir -p .github/workflows/
+    abbr --add mkdir.zz mkdir zz_deprecated
+    abbr --add mkdir.depr mkdir zz_deprecated
     abbr --add gitadd git add
     abbr --add ga git add
     abbr --add gitbranch git branch
