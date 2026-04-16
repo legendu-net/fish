@@ -82,7 +82,6 @@ if status is-interactive
     abbr --add uv.ty.check uv run ty check
     abbr --add uv.deptry uv run deptry .
     abbr --add uv.lint.python 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
-    abbr --add uvx.lint.python 'uvx ruff format && uvx ruff check'
     abbr --add uv.jb.start NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book start
     abbr --add uv.ipython uv run --python 3.14 \
         --with aiutil[all] \
@@ -90,6 +89,8 @@ if status is-interactive
         --with dockeree \
         --with IPython \
         python -m IPython
+    abbr --add uvx.lint.python 'uvx ruff format && uvx ruff check'
+    abbr --add uvx.mdformat uvx mdformat
     abbr --add gol golangci-lint
     abbr --add golf golangci-lint fmt
     abbr --add golr golangci-lint run
