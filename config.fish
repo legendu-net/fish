@@ -28,6 +28,7 @@ if status is-interactive
     end
     # -----------------------------------------------------
     abbr --add mkdir.workflow mkdir -p .github/workflows/
+    abbr --add mkdir.gemini mkdir -p .gemini/
     abbr --add mkdir.zz_deprecated mkdir zz_deprecated/
     abbr --add gitadd git add
     abbr --add ga git add
