@@ -110,6 +110,9 @@ if status is-interactive
         abbr --add ls.archive 'ls *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'ls *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
     end
+    if command -q printf
+        abbr --add echo printf
+    end
     if command -q dust
         abbr --add du dust
     end
@@ -136,6 +139,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
+    abbr --add icon.jvim.enable icon jvim --sudo --enable
     abbr --add jvim.enable icon jvim --sudo --enable
     abbr --add blog ./blog.py
     abbr --add euporie.notebook 'euporie notebook \
