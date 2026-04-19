@@ -31,6 +31,7 @@ function uv_lint
     end
 
     for pyscript in $argv
+        printf $line $pyscript
         printf $line " ruff check "
         uv run --with ruff --with-requirements "$pyscript" ruff check "$pyscript"
         printf $line " ruff format "
