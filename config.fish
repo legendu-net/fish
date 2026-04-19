@@ -89,8 +89,8 @@ if status is-interactive
     abbr --add uv.deptry uv run deptry .
     abbr --add uv.pytest uv run pytest
     abbr --add uv.lint.project 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry . && uv run pytest'
-    abbr --add uv.jb.start NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book start
-    abbr --add uv.jb.build NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book build --html
+    abbr --add uv.jb.start HOST=127.0.0.1 NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book start
+    abbr --add uv.jb.build HOST=127.0.0.1 NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book build --html
     abbr --add uv.ipython uv run --python 3.14 \
         --with aiutil[all] \
         --with github_rest_api \
