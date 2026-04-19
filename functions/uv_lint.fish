@@ -1,6 +1,6 @@
 function _uv_lint_usage
-    printf "Lint a script using uvx.
-Syntax: uvx_lint_script [options] script
+    printf "Lint (a) Python project or scripts managed by uv.
+Syntax: uv_lint [options] [script...]
 "
 end
 
