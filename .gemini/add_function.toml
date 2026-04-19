@@ -1,0 +1,6 @@
+description = "Add a fish function."
+prompt = """
+Add a fish script in the directory `functions/` which defines a fish function (ask me the the name to use). 
+Build the skeleton and leave the implementation to me. 
+Refer to existing scripts in the directory if needed.
+"""

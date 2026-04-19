@@ -30,6 +30,9 @@ if status is-interactive
     abbr --add mkdir.workflow mkdir -p .github/workflows/
     abbr --add mkdir.gemini mkdir -p .gemini/
     abbr --add mkdir.zz_deprecated mkdir zz_deprecated/
+    # -----------------------------------------------------
+    abbr --add awk.print awk '{print}'
+    # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
     abbr --add gitbranch git branch
@@ -65,6 +68,7 @@ if status is-interactive
     abbr --add git.unmerged 'git status --porcelain | grep "U " | awk -F "U " \'{print $2}\''
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
+    # -----------------------------------------------------
     abbr --add di docker images
     abbr --add dri docker rmi
     abbr --add dr docker rm
@@ -77,12 +81,14 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish --no-execute **.fish'
     abbr --add fi 'fish_indent --write **.fish && git status'
+    abbr --add uv.pyproject-fmt uv run pyproject-fmt pyproject.toml
     abbr --add uv.mdformat uv run mdformat
     abbr --add uv.ruff.format uv run ruff format
     abbr --add uv.ruff.check uv run ruff check
     abbr --add uv.ty.check uv run ty check
     abbr --add uv.deptry uv run deptry .
-    abbr --add uv.lint.python 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry .'
+    abbr --add uv.pytest uv run pytest
+    abbr --add uv.lint.project 'uv run ruff format && uv run ruff check && uv run ty check && uv run deptry . && uv run pytest'
     abbr --add uv.jb.start NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book start
     abbr --add uv.jb.build NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book build --html
     abbr --add uv.ipython uv run --python 3.14 \
@@ -91,7 +97,8 @@ if status is-interactive
         --with dockeree \
         --with IPython \
         python -m IPython
-    abbr --add uvx.lint.python 'uvx ruff format && uvx ruff check'
+    abbr --add uvx.ruff.format uvx ruff format
+    abbr --add uvx.ruff.check uvx ruff check
     abbr --add uvx.mdformat uvx mdformat
     abbr --add gol golangci-lint
     abbr --add golf golangci-lint fmt
