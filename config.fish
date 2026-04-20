@@ -81,6 +81,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish --no-execute **.fish'
     abbr --add fi 'fish_indent --write **.fish && git status'
+    abbr --add uv.sync uv sync --all-extras
     abbr --add uv.pyproject-fmt uv run pyproject-fmt pyproject.toml
     abbr --add uv.mdformat uv run mdformat
     abbr --add uv.ruff.format uv run ruff format
