@@ -81,6 +81,10 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add f 'fish --no-execute **.fish'
     abbr --add fi 'fish_indent --write **.fish && git status'
+    # -----------------------------------------------------
+    abbr --add cargo.publish cargo publish --allow-dirty
+    abbr --add cargo.pub cargo publish --allow-dirty
+    # -----------------------------------------------------
     abbr --add uv.sync uv sync --all-extras
     abbr --add uv.pyproject-fmt uv run pyproject-fmt pyproject.toml
     abbr --add uv.mdformat uv run mdformat
@@ -101,6 +105,7 @@ if status is-interactive
     abbr --add uvx.ruff.format uvx ruff format
     abbr --add uvx.ruff.check uvx ruff check
     abbr --add uvx.mdformat uvx mdformat
+    # -----------------------------------------------------
     abbr --add gol golangci-lint
     abbr --add golf golangci-lint fmt
     abbr --add golr golangci-lint run
