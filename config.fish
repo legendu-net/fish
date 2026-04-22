@@ -136,6 +136,7 @@ if status is-interactive
         abbr --add htop btm
     end
     abbr --add mvi mv -i
+    abbr --add mv.readme mv -i readme.md README.md
     abbr --add cpi cp -ir
     abbr --add ... cd ../..
     abbr --add .... cd ../../..
