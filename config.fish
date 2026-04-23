@@ -31,7 +31,7 @@ if status is-interactive
     abbr --add mkdir.gemini mkdir -p .gemini/
     abbr --add mkdir.zz_deprecated mkdir zz_deprecated/
     # -----------------------------------------------------
-    abbr --add awk.print awk '{print}'
+    abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
