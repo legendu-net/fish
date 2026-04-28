@@ -43,6 +43,8 @@ if status is-interactive
     abbr --add gc git commit -m
     abbr --add gitdiff git diff
     abbr --add gd git diff
+    abbr --add gds git diff --staged
+    abbr --add gdss git diff --staged | gemini -p "Write a concise conventional commit message for this diff. Output ONLY the message."
     abbr --add gdni git diff --no-index
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
@@ -59,7 +61,8 @@ if status is-interactive
     abbr --add gplom git pull origin main
     abbr --add gitremote git remote -v
     abbr --add gr git remote -v
-    abbr --add git.submodule 'git submodule init && git submodule update --recursive --remote'
+    abbr --add git.submodule.add 'git submodule add'
+    abbr --add git.submodule.update 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status --porcelain | grep "M " | awk -F"M " \'{print $2}\''
     abbr --add git.added 'git status --porcelain | grep "A " | awk -F"A " \'{print $2}\''
     abbr --add git.deleted 'git status --porcelain | grep "D " | awk -F "D " \'{print $2}\''
