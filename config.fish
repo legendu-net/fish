@@ -44,7 +44,7 @@ if status is-interactive
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
-    abbr --add gdss 'git diff --staged | gemini -p "Write a concise conventional commit message for this diff. Output ONLY the message."'
+    abbr --add gdss 'git diff --staged | gemini --skip-trust -p "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add gdni git diff --no-index
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
