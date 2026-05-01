@@ -33,6 +33,12 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
+    abbr --add jjs jj status
+    abbr --add jjd jj diff
+    abbr --add jjc jj commit -m
+    abbr --add jjsy jj sync
+    abbr --add jju jj upload --all
+    # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
     abbr --add gitbranch git branch
