@@ -33,6 +33,12 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
+    abbr --add jjs jj status
+    abbr --add jjd jj diff
+    abbr --add jjc jj commit -m
+    abbr --add jjsy jj sync
+    abbr --add jju jj upload --all
+    # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
     abbr --add gitbranch git branch
@@ -44,7 +50,7 @@ if status is-interactive
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
-    abbr --add gdss 'git diff --staged | gemini -p "Write a concise conventional commit message for this diff. Output ONLY the message."'
+    abbr --add gdss 'git diff --staged | gemini --skip-trust -p "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add gdni git diff --no-index
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
