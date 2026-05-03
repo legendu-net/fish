@@ -40,7 +40,16 @@ if status is-interactive
     abbr --add jjn jj new
     abbr --add jjsy jj sync
     abbr --add jju jj upload --all
+    abbr --add jjb jj bookmark
+    abbr --add jjbc jj bookmark create
+    abbr --add jjbcm jj bookmark create main
     abbr --add jjgp jj git push
+    abbr --add jjgr jj git remote
+    abbr --add jjgrl jj git remote list
+    abbr --add jjgra jj git remote add
+    abbr --add jjgrao jj git remote add origin URL
+    abbr --add jjcsue jj config set --user user.email
+    abbr --add jjcsun jj config set --user user.name
     # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
