@@ -68,6 +68,7 @@ if status is-interactive
     abbr --add gfo git fetch origin
     abbr --add gitrestore git restore
     abbr --add grs git restore
+    abbr --add grss git restore --staged
     abbr --add gitstatus git status
     abbr --add gs git status
     abbr --add gsp git status --porcelain
