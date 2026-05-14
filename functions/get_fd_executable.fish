@@ -1,10 +1,10 @@
 function get_fd_executable
     if command -q fdfind
-        printf fdfind\n
+        echo fdfind
     else if command -q fd
-        printf fd\n
+        echo fd
     else
-        printf (set_color $fish_color_error)"Error: the command fdfind/fd is not found!\n"(set_color normal) >&2
+        echo (set_color $fish_color_error)"Error: the command fdfind/fd is not found!"(set_color normal) >&2
         return 1
     end
 end

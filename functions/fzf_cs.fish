@@ -1,9 +1,8 @@
 function _fzf_cs_usage
-    printf "Search for a directory using fzf, cd into it, and run ls.
+    echo "Search for a directory using fzf, cd into it, and run ls.
 Syntax: fzf_cs [-h] [dir]
 Args:
-    dir: The directory (default to .) under which to search for sub directories.
-"
+    dir: The directory (default to .) under which to search for sub directories."
 end
 
 function fzf_cs

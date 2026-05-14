@@ -1,12 +1,11 @@
 function _fzf_ripgrep_usage
-    printf "Leverage fzf as the UI to search for files by content using ripgrep,
+    echo "Leverage fzf as the UI to search for files by content using ripgrep,
 preview it using bat, and open selections using external editors.
 Syntax: fzf_ripgrep [-h] [-e/--edit] [dir]
 Args:
     -h/--help: Show the help doc.
     -e/--edit: Edit the file using the editor returned by `preferred_editor -g`.
-    dir: The directory (default to .) under which to search for files.
-"
+    dir: The directory (default to .) under which to search for files."
 end
 
 function fzf_ripgrep
