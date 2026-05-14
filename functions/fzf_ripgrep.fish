@@ -4,7 +4,7 @@ preview it using bat, and open selections using external editors.
 Syntax: fzf_ripgrep [-h] [-e/--edit] [dir]
 Args:
     -h/--help: Show the help doc.
-    -e/--edit: Edit the file using the editor returned by \`preferred_editor -g\`.
+    -e/--edit: Edit the file using the editor returned by `preferred_editor -g`.
     dir: The directory (default to .) under which to search for files."
 end
 

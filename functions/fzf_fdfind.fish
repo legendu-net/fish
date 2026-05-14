@@ -5,7 +5,7 @@ Syntax: fzf_fdfind [-h/--help] [-c/--cmd command] [-e/--edit] [-t/--type filetyp
 Args:
     -h/--help: Show the help doc.
     -c/--cmd command: Run command (default nvim) on the file.
-    -e/--edit: Edit the file using the editor returned by \`preferred_editor -g\`.
+    -e/--edit: Edit the file using the editor returned by `preferred_editor -g`.
     -t/--type filetype: The -t/--type option of the fd command.
     dir: The directory (default to .) under which to search for files."
 end
