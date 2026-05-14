@@ -1,7 +1,6 @@
 function _trace_dir_upwards_usage
-    printf "Trace a directory upwards until the name is found.
-Syntax: trace_dir_upwards <dir> <name>
-"
+    echo "Trace a directory upwards until the name is found.
+Syntax: trace_dir_upwards <dir> <name>"
 end
 
 function trace_dir_upwards
@@ -24,5 +23,5 @@ function trace_dir_upwards
         set stem (path basename "$dir")
     end
 
-    printf "$dir\n"
+    echo "$dir"
 end

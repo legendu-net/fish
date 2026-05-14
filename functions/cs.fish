@@ -1,7 +1,6 @@
 function _cs_usage
-    printf "Enter a directory and display its content.
-Syntax: cs dir
-"
+    echo "Enter a directory and display its content.
+Syntax: cs dir"
 end
 
 function cs
