@@ -17,7 +17,7 @@ function trace_dir_upwards
 
     while test "$stem" != "$name"
         if contains -- "$stem" / ""
-            printf (set_color $fish_color_error)"Error: $name is not found in $argv[1]!\n"(set_color normal) >&2
+            echo (set_color $fish_color_error)"Error: $name is not found in $argv[1]!"(set_color normal) >&2
             return 1
         end
         set dir (path dirname "$dir")

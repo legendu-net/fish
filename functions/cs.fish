@@ -21,7 +21,7 @@ function cs
 
     cd "$dir"
     if test $status -ne 0
-        printf (set_color $fish_color_error)"Error: failed to cd into $dir!\n"(set_color normal) >&2
+        echo (set_color $fish_color_error)"Error: failed to cd into $dir!"(set_color normal) >&2
         return 1
     end
     if command -q eza

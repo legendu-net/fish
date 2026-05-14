@@ -1,10 +1,9 @@
 function _fzf_history_usage
-    printf "Search for a fish history command using fzf, edit and run it.
+    echo "Search for a fish history command using fzf, edit and run it.
 Syntax: fzf_history [-h/--help] [-e/--edit]
 Args:
     -h/--help: Show the help doc.
-    -e/--edit: Edit selected commands.
-"
+    -e/--edit: Edit selected commands."
 end
 
 function fzf_history

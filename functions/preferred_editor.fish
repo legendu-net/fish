@@ -22,7 +22,7 @@ function preferred_editor
     end
     for e in $editors
         if command -q $e
-            printf $e\n
+            echo $e
             return 0
         end
     end

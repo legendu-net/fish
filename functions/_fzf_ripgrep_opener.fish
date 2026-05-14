@@ -11,7 +11,7 @@ function _fzf_ripgrep_opener
             history append "$argv[1] -g $files"
             $argv[1] -g $files
         case "*"
-            printf (set_color $fish_color_error)"Error: $argv[1] is not supported!\n"(set_color normal) >&2
+            echo (set_color $fish_color_error)"Error: $argv[1] is not supported!"(set_color normal) >&2
             return 1
     end
 end
