@@ -35,7 +35,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add jjs jj status
     abbr --add jjd jj diff
-    abbr --add jjc jj describe -m
+    abbr --add jjc jj commit -m
     abbr --add jjde jj describe -m
     abbr --add jjn jj new
     abbr --add jjsy jj sync
@@ -146,9 +146,6 @@ if status is-interactive
         abbr --add ls.media 'ls *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
         abbr --add ls.archive 'ls *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'ls *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
-    end
-    if command -q printf
-        abbr --add echo printf
     end
     if command -q dust
         abbr --add du dust
