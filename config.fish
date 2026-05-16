@@ -35,7 +35,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add jjs jj status
     abbr --add jjd jj diff
-    abbr --add jjc jj describe -m
+    abbr --add jjc jj commit -m
     abbr --add jjde jj describe -m
     abbr --add jjn jj new
     abbr --add jjsy jj sync
