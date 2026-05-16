@@ -147,9 +147,6 @@ if status is-interactive
         abbr --add ls.archive 'ls *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'ls *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
     end
-    if command -q printf
-        abbr --add echo printf
-    end
     if command -q dust
         abbr --add du dust
     end
