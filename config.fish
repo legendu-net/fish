@@ -38,6 +38,9 @@ if status is-interactive
     abbr --add jjc jj commit -m
     abbr --add jjde jj describe -m
     abbr --add jjn jj new
+    abbr --add jja jj abandon
+    abbr --add jje jj edit @-
+    abbr --add jjsq jj squash
     abbr --add jjsy jj sync
     abbr --add jju jj upload --all
     abbr --add jjb jj bookmark
@@ -49,7 +52,9 @@ if status is-interactive
     abbr --add jjgra jj git remote add
     abbr --add jjgrao jj git remote add origin URL
     abbr --add jjcsue jj config set --user user.email
+    abbr --add jjue jj config set --user user.email
     abbr --add jjcsun jj config set --user user.name
+    abbr --add jjun jj config set --user user.name
     # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
@@ -90,6 +95,16 @@ if status is-interactive
     abbr --add git.unmerged 'git status --porcelain | grep "U " | awk -F "U " \'{print $2}\''
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
+    # -----------------------------------------------------
+    abbr --add pmi podman images
+    abbr --add pmri podman rmi
+    abbr --add pmr podman rm
+    abbr --add pmp podman pull
+    abbr --add pms podman stop
+    abbr --add pmps podman ps
+    abbr --add pmpjhub podman pull quay.io/legendu/jupyterhub-ds
+    abbr --add pmpcs podman pull quay.io/legendu/vscode-server
+    abbr --add pmpvsc podman pull quay.io/legendu/vscode-server
     # -----------------------------------------------------
     abbr --add di docker images
     abbr --add dri docker rmi
