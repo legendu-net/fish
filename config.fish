@@ -91,6 +91,16 @@ if status is-interactive
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     # -----------------------------------------------------
+    abbr --add pmi podman images
+    abbr --add pmri podman rmi
+    abbr --add pmr podman rm
+    abbr --add pmp podman pull
+    abbr --add pms podman stop
+    abbr --add pmps podman ps
+    abbr --add pmpjhub podman pull quay.io/legendu/jupyterhub-ds
+    abbr --add pmpcs podman pull quay.io/legendu/vscode-server
+    abbr --add pmpvsc podman pull quay.io/legendu/vscode-server
+    # -----------------------------------------------------
     abbr --add di docker images
     abbr --add dri docker rmi
     abbr --add dr docker rm
