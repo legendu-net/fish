@@ -37,8 +37,8 @@ if status is-interactive
     abbr --add jjd 'jj diff && echo'
     abbr --add jjr 'jj restore && echo'
     abbr --add jjrs 'jj restore && echo'
-    abbr --add jjc 'jj commit -m && echo'
-    abbr --add jjde 'jj describe -m && echo'
+    abbr --add jjc 'jj commit -m "" && echo'
+    abbr --add jjde 'jj describe -m "" && echo'
     abbr --add jjn 'jj new && echo'
     abbr --add jja 'jj abandon && echo'
     abbr --add jje 'jj edit @- && echo'
@@ -64,8 +64,8 @@ if status is-interactive
     abbr --add gb git branch
     abbr --add gitclone git clone
     abbr --add gcl git clone
-    abbr --add gitcommit git commit -m
-    abbr --add gc git commit -m
+    abbr --add gitcommit git commit -m ""
+    abbr --add gc git commit -m ""
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
