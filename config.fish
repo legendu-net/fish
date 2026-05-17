@@ -98,6 +98,12 @@ if status is-interactive
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     # -----------------------------------------------------
+    abbr --add tbc toolbox create
+    abbr --add tbe toolbox enter
+    abbr --add tbl toolbox list
+    abbr --add tbcjhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox enter jupyterhub-ds'
+    abbr --add tbcvscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox enter code-server'
+    # -----------------------------------------------------
     abbr --add pmi podman images
     abbr --add pmri podman rmi
     abbr --add pmr podman rm
