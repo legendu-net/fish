@@ -48,6 +48,7 @@ if status is-interactive
     abbr --add jjb jj bookmark
     abbr --add jjbc jj bookmark create
     abbr --add jjbcm jj bookmark create main
+    abbr --add jjgf jj git fetch
     abbr --add jjgp jj git push
     abbr --add jjgr jj git remote
     abbr --add jjgrl jj git remote list
