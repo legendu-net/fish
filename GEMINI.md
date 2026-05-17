@@ -10,19 +10,26 @@ through interactive tools, efficient abbreviations, and modular functions.
 - **Key Technologies:**
   - **Fish Shell:** The core shell environment.
   - **Interactive Search:** Powered by `fzf`, `ripgrep` (`rg`), and `fd-find`.
-  - **Tooling Integrations:** Extensive support and abbreviations for `git`, `docker`, `uv`, `hg`, and `eza`.
+  - **Tooling Integrations:** Extensive support and abbreviations for `git`, `jj` (Jujutsu), `docker`, `podman`, `toolbox`, `uv`, `hg`, `cargo`, and `eza`.
+  - **AI Integration:** Integration with Gemini for automated tasks (e.g., generating commit messages).
   - **Editors:** Prefers `nvim`, falling back to `vim` or `vi`. Support for GUI editors like VS Code via `preferred_editor`.
   - **Completions:** Custom completions, some generated via YAML-based definitions in `completions/`.
 
-## Architecture & Structure
+  ## Key Features
 
-- `config.fish`: The main entry point for interactive sessions.
-  Sets up paths, environment variables, and abbreviations.
-- `functions/`: Contains modular Fish functions.
-  Many follow a pattern of providing interactive UIs for existing CLI tools (e.g., `fzf_ripgrep`, `fzf_history`).
-- `completions/`: Command completion scripts and YAML definitions for tools like `ldc`.
-- `fish_variables`: Persistent fish variables.
+  - **Interactive Search:** Robust interactive search and navigation powered by `fzf`, `ripgrep`, and `fd-find`.
+  - **Abbreviation Expansion:** A custom `expand_all_abbr` function (bound to `ctrl-alt-space`) allows for expanding all abbreviations in the current command line.
+  - **Enhanced Navigation:** The `cs` function combines directory changing with automatic listing (via `eza` or `ls`).
+  - **Smart Commit Messages:** The `gdss` abbreviation uses Gemini to generate concise conventional commit messages based on staged changes.
 
+  ## Architecture & Structure
+
+  - `config.fish`: The main entry point for interactive sessions.
+    Sets up paths, environment variables, abbreviations, and keybindings.
+  - `functions/`: Contains modular Fish functions.
+    Many follow a pattern of providing interactive UIs for existing CLI tools (e.g., `fzf_ripgrep`, `fzf_history`).
+  - `completions/`: Command completion scripts and YAML definitions for tools like `ldc`.
+  - `fish_variables`: Persistent fish variables.
 ## Building and Running
 
 The best way to use this fish configuration is to install
@@ -55,12 +62,21 @@ based on YAML definitions in `completions/` as well.
   fish -n **.fish
   ```
 - **Common Abbreviations:**
-  - `gs`: `git status`
-  - `gc`: `git commit -m`
-  - `gp`: `git push`
-  - `frg`: `fzf_ripgrep` (Interactive search by content)
-  - `ffd`: `fzf_fdfind` (Interactive search by filename)
-  - `uv.lint.project`: Runs a full suite of Python linting tools via `uv`.
+  - **Version Control:**
+    - `gs`: `git status`
+    - `gc`: `git commit -m ""`
+    - `gdss`: Generates commit message via Gemini
+    - `jjs`: `jj status`
+    - `jjd`: `jj diff`
+  - **Interactive Search:**
+    - `frg`: `fzf_ripgrep` (Interactive search by content)
+    - `ffd`: `fzf_fdfind` (Interactive search by filename)
+    - `fcs` / `fcd`: Interactive directory changer
+    - `fh` / `fhist`: Interactive history search
+  - **Development:**
+    - `uv.lint.project`: Runs Python linting suite via `uv`
+    - `fi`: Formats all fish files and shows status
+    - `...`: `cd ../..` (and `....` for three levels up)
 
 ## Development Conventions
 

@@ -64,8 +64,8 @@ if status is-interactive
     abbr --add gb git branch
     abbr --add gitclone git clone
     abbr --add gcl git clone
-    abbr --add gitcommit git commit -m ""
-    abbr --add gc git commit -m ""
+    abbr --add gitcommit 'git commit -m ""'
+    abbr --add gc 'git commit -m ""'
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
