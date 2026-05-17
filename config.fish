@@ -33,16 +33,16 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
-    abbr --add jjs jj status
-    abbr --add jjd jj diff
-    abbr --add jjr jj restore
-    abbr --add jjrs jj restore
-    abbr --add jjc jj commit -m
-    abbr --add jjde jj describe -m
-    abbr --add jjn jj new
-    abbr --add jja jj abandon
-    abbr --add jje jj edit @-
-    abbr --add jjsq jj squash
+    abbr --add jjs 'jj status && echo'
+    abbr --add jjd 'jj diff && echo'
+    abbr --add jjr 'jj restore && echo'
+    abbr --add jjrs 'jj restore && echo'
+    abbr --add jjc 'jj commit -m && echo'
+    abbr --add jjde 'jj describe -m && echo'
+    abbr --add jjn 'jj new && echo'
+    abbr --add jja 'jj abandon && echo'
+    abbr --add jje 'jj edit @- && echo'
+    abbr --add jjsq 'jj squash && echo'
     abbr --add jjsy jj sync
     abbr --add jju jj upload --all
     abbr --add jjb jj bookmark
