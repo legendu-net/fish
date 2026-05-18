@@ -34,9 +34,9 @@ if status is-interactive
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
     abbr --add jjs 'jj status && echo'
-    abbr --add jjd --set-cursor 'jj diff % && echo'
-    abbr --add jjr --set-cursor 'jj restore % && echo'
-    abbr --add jjrs --set-cursor 'jj restore % && echo'
+    abbr --add jjd --set-cursor 'jj diff "%" && echo'
+    abbr --add jjr --set-cursor 'jj restore "%" && echo'
+    abbr --add jjrs --set-cursor 'jj restore "%" && echo'
     abbr --add jjc --set-cursor 'jj commit -m "%" && echo'
     abbr --add jjde --set-cursor 'jj describe -m "%" && echo'
     abbr --add jjn 'jj new && echo'
@@ -48,7 +48,7 @@ if status is-interactive
     abbr --add jjb jj bookmark
     abbr --add jjbc jj bookmark create
     abbr --add jjbcm jj bookmark create main
-    abbr --add jjgf jj git fetch
+    abbr --add jjgf jj git fetch && echo
     abbr --add jjgp jj git push
     abbr --add jjgr jj git remote
     abbr --add jjgrl jj git remote list
