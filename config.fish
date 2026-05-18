@@ -33,22 +33,23 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
-    abbr --add jjs 'jj status && echo'
+    abbr --add jjs --set-cursor 'jj status % && echo'
     abbr --add jjd --set-cursor 'jj diff % && echo'
     abbr --add jjr --set-cursor 'jj restore % && echo'
     abbr --add jjrs --set-cursor 'jj restore % && echo'
     abbr --add jjc --set-cursor 'jj commit -m "%" && echo'
     abbr --add jjde --set-cursor 'jj describe -m "%" && echo'
-    abbr --add jjn 'jj new && echo'
-    abbr --add jja 'jj abandon && echo'
+    abbr --add jjn --set-cursor 'jj new % && echo'
+    abbr --add jja --set-cursor 'jj abandon % && echo'
     abbr --add jje --set-cursor 'jj edit @-% && echo'
-    abbr --add jjsq --set-cursor 'jj squash % && echo'
+    abbr --add jjsq --set-cursor 'jj squash --into @-% && echo'
     abbr --add jjsy jj sync
     abbr --add jju jj upload --all
     abbr --add jjb jj bookmark
     abbr --add jjbc jj bookmark create
     abbr --add jjbcm jj bookmark create main
-    abbr --add jjgf jj git fetch
+    abbr --add jjgi --set-cursor 'jj git init --colocate % && echo'
+    abbr --add jjgf --set-cursor 'jj git fetch % && echo'
     abbr --add jjgp jj git push
     abbr --add jjgr jj git remote
     abbr --add jjgrl jj git remote list
