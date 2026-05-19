@@ -1,4 +1,12 @@
 if status is-interactive
+    # =====================================================
+    function jj
+        command jj $argv
+        set -l ret $status
+        isatty stdout; and echo
+        return $ret
+    end
+    # =====================================================
     set fish_user_paths $HOME/*/bin/ \
         $HOME/.*/bin/ \
         $HOME/Library/Python/3.*/bin/ \
@@ -33,23 +41,23 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
-    abbr --add jjs --set-cursor 'jj status % && echo'
-    abbr --add jjd --set-cursor 'jj diff % && echo'
-    abbr --add jjr --set-cursor 'jj restore % && echo'
-    abbr --add jjrs --set-cursor 'jj restore % && echo'
-    abbr --add jjc --set-cursor 'jj commit -m "%" && echo'
-    abbr --add jjde --set-cursor 'jj describe -m "%" && echo'
-    abbr --add jjn --set-cursor 'jj new % && echo'
-    abbr --add jja --set-cursor 'jj abandon % && echo'
-    abbr --add jje --set-cursor 'jj edit @-% && echo'
-    abbr --add jjsq --set-cursor 'jj squash --into @-% && echo'
+    abbr --add jjs jj status
+    abbr --add jjd jj diff
+    abbr --add jjr jj restore
+    abbr --add jjrs jj restore
+    abbr --add jjc --set-cursor 'jj commit -m "%"'
+    abbr --add jjde --set-cursor 'jj describe -m "%"'
+    abbr --add jjn jj new
+    abbr --add jja jj abandon
+    abbr --add jje jj edit @-
+    abbr --add jjsq jj squash --into @-
     abbr --add jjsy jj sync
     abbr --add jju jj upload --all
     abbr --add jjb jj bookmark
     abbr --add jjbc jj bookmark create
     abbr --add jjbcm jj bookmark create main
-    abbr --add jjgi --set-cursor 'jj git init --colocate % && echo'
-    abbr --add jjgf --set-cursor 'jj git fetch % && echo'
+    abbr --add jjgi jj git init --colocate
+    abbr --add jjgf jj git fetch
     abbr --add jjgp jj git push
     abbr --add jjgr jj git remote
     abbr --add jjgrl jj git remote list
@@ -89,7 +97,7 @@ if status is-interactive
     abbr --add gplom git pull origin main
     abbr --add gitremote git remote -v
     abbr --add gr git remote -v
-    abbr --add git.submodule.add 'git submodule add'
+    abbr --add git.submodule.add git submodule add
     abbr --add git.submodule.update 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status --porcelain | grep "M " | awk -F"M " \'{print $2}\''
     abbr --add git.added 'git status --porcelain | grep "A " | awk -F"A " \'{print $2}\''
