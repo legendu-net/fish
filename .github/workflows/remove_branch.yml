@@ -15,5 +15,5 @@ jobs:
           curl -sSL https://raw.githubusercontent.com/legendu-net/github_actions_scripts/main/remove_branch.py \
             | uv run --script - \
             --repo ${{ github.repository }} \
-            --pattern '(?!^main$)' \
+            --pattern '^(?!main$)' \
             --token ${{ secrets.GITHUBACTIONS }}
