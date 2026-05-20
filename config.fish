@@ -1,12 +1,5 @@
 if status is-interactive
     # =====================================================
-    function jj
-        command jj $argv
-        set -l ret $status
-        isatty stdout; and echo
-        return $ret
-    end
-    # =====================================================
     set fish_user_paths $HOME/*/bin/ \
         $HOME/.*/bin/ \
         $HOME/Library/Python/3.*/bin/ \
@@ -41,32 +34,50 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add awk.print "awk '{print}'"
     # -----------------------------------------------------
+    function jj
+        command jj $argv
+        set -l ret $status
+        isatty stdout; and echo
+        return $ret
+    end
     abbr --add jjs jj status
     abbr --add jjd jj diff
     abbr --add jjr jj restore
     abbr --add jjrs jj restore
     abbr --add jjc --set-cursor 'jj commit -m "%"'
     abbr --add jjde --set-cursor 'jj describe -m "%"'
+    abbr --add jjds --set-cursor 'jj describe -m "%"'
     abbr --add jjn jj new
     abbr --add jja jj abandon
     abbr --add jje jj edit @-
-    abbr --add jjsq jj squash --into @-
+    abbr --add jjsq --set-cursor 'jj squash --into @-%'
+    abbr --add jjrb jj rebase
+    abbr --add jjrbom jj rebase --onto main
+    abbr --add jjrbod jj rebase --onto dev
     abbr --add jjsy jj sync
-    abbr --add jju jj upload --all
+    abbr --add jjun jj undo
+    abbr --add jjfu jj file untrack
+    abbr --add jjup jj upload --all
     abbr --add jjb jj bookmark
+    abbr --add jjbl jj bookmark list
     abbr --add jjbc jj bookmark create
     abbr --add jjbcm jj bookmark create main
+    abbr --add jjbd jj bookmark delete
+    abbr --add jjbt jj bookmark track
+    abbr --add jjbtd jj bookmark track dev --remote origin
+    abbr --add jjbtm jj bookmark track main --remote origin
     abbr --add jjgi jj git init --colocate
     abbr --add jjgf jj git fetch
     abbr --add jjgp jj git push
+    abbr --add jjgpp --set-cursor 'jj git push --change @-%'
     abbr --add jjgr jj git remote
     abbr --add jjgrl jj git remote list
     abbr --add jjgra jj git remote add
     abbr --add jjgrao jj git remote add origin URL
     abbr --add jjcsue jj config set --user user.email
-    abbr --add jjue jj config set --user user.email
+    abbr --add jjcue jj config set --user user.email
     abbr --add jjcsun jj config set --user user.name
-    abbr --add jjun jj config set --user user.name
+    abbr --add jjcun jj config set --user user.name
     # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
