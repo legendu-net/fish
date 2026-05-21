@@ -50,7 +50,7 @@ if status is-interactive
     abbr --add jjn jj new
     abbr --add jja jj abandon
     abbr --add jje jj edit @-
-    abbr --add jjsq --set-cursor 'jj squash --into @-%'
+    abbr --add jjsq --set-cursor 'jj squash --into @- %'
     abbr --add jjrb jj rebase
     abbr --add jjrbom jj rebase --onto main
     abbr --add jjrbod jj rebase --onto dev
@@ -76,8 +76,8 @@ if status is-interactive
     abbr --add jjgrao jj git remote add origin URL
     abbr --add jjcsue jj config set --user user.email
     abbr --add jjcue jj config set --user user.email
-    abbr --add jjcsun jj config set --user user.name
-    abbr --add jjcun jj config set --user user.name
+    abbr --add jjcsun --set-cursor 'jj config set --user user.name "%"'
+    abbr --add jjcun --set-cursor 'jj config set --user user.name "%"'
     # -----------------------------------------------------
     abbr --add gitadd git add
     abbr --add ga git add
