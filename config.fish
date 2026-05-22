@@ -66,6 +66,8 @@ if status is-interactive
     abbr --add jjbt jj bookmark track
     abbr --add jjbtd jj bookmark track dev --remote origin
     abbr --add jjbtm jj bookmark track main --remote origin
+    abbr --add jjbs jj bookmark set
+    abbr --add jjbsm jj bookmark set main -r @-
     abbr --add jjgi jj git init --colocate
     abbr --add jjgf jj git fetch
     abbr --add jjgp jj git push
