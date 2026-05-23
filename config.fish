@@ -76,6 +76,9 @@ if status is-interactive
     abbr --add jjgrl jj git remote list
     abbr --add jjgra jj git remote add
     abbr --add jjgrao jj git remote add origin URL
+    abbr --add jjl jj log
+    abbr --add jjce jj config edit
+    abbr --add jjcer jj config edit --repo
     abbr --add jjcsue jj config set --user user.email
     abbr --add jjcue jj config set --user user.email
     abbr --add jjcsun --set-cursor 'jj config set --user user.name "%"'
