@@ -127,8 +127,10 @@ if status is-interactive
     abbr --add tbc toolbox create
     abbr --add tbe toolbox enter
     abbr --add tbl toolbox list
-    abbr --add tbcjhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox enter jupyterhub-ds'
-    abbr --add tbcvscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox enter code-server'
+    abbr --add tbcejhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox enter jupyterhub-ds'
+    abbr --add tbcrjhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox run -c jupyterhub-ds /scripts/init.sh'
+    abbr --add tbcevscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox enter code-server'
+    abbr --add tbcrvscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox run -c code-server /scripts/init.sh'
     # -----------------------------------------------------
     abbr --add pmi podman images
     abbr --add pmri podman rmi
