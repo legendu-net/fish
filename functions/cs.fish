@@ -3,7 +3,7 @@ function _cs_usage
 Syntax: cs dir"
 end
 
-function cs
+function cs --description 'Change directory and list its contents'
     argparse h/help -- $argv
     if set -q _flag_help
         _cs_usage

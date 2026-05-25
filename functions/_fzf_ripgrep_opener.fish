@@ -1,6 +1,6 @@
 # Helper function for fzf_ripgrep
 # Defines an opener to operate on selected files.
-function _fzf_ripgrep_opener
+function _fzf_ripgrep_opener --description 'Helper function for fzf_ripgrep to open selected files'
     set -l files (cat $argv[2] | awk -F: -v OFS=: '{print $1,$2,$3}')
     switch $argv[1]
         case nvim vim vi

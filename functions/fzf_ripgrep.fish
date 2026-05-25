@@ -8,7 +8,7 @@ Args:
     dir: The directory (default to .) under which to search for files."
 end
 
-function fzf_ripgrep
+function fzf_ripgrep --description 'Search files by content using ripgrep and fzf'
     argparse h/help e/edit -- $argv
     if set -q _flag_help
         _fzf_ripgrep_usage

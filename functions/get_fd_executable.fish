@@ -1,4 +1,4 @@
-function get_fd_executable
+function get_fd_executable --description 'Get the name of the fd/fdfind executable'
     if command -q fdfind
         echo fdfind
     else if command -q fd

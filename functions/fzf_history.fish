@@ -6,7 +6,7 @@ Args:
     -e/--edit: Edit selected commands."
 end
 
-function fzf_history
+function fzf_history --description 'Search command history with fzf'
     argparse h/help e/edit -- $argv
     if set -q _flag_help
         _fzf_history_usage

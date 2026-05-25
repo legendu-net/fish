@@ -40,6 +40,7 @@ if status is-interactive
         isatty stdout; and echo
         return $ret
     end
+    abbr --add jjcc jj_check_conflicts
     abbr --add jjs jj status
     abbr --add jjd jj diff
     abbr --add jjr jj restore
@@ -48,6 +49,7 @@ if status is-interactive
     abbr --add jjde --set-cursor 'jj describe -m "%"'
     abbr --add jjds --set-cursor 'jj describe -m "%"'
     abbr --add jjn jj new
+    abbr --add jjsp jj split
     abbr --add jja jj abandon
     abbr --add jje jj edit @-
     abbr --add jjsq --set-cursor 'jj squash --into @- %'
@@ -70,6 +72,7 @@ if status is-interactive
     abbr --add jjbsm jj bookmark set main -r @-
     abbr --add jjgi jj git init --colocate
     abbr --add jjgf jj git fetch
+    abbr --add jjgfcc --set-cursor 'jj git fetch && jj log -r "@- & ::main"%'
     abbr --add jjgp jj git push
     abbr --add jjgpp --set-cursor 'jj git push --change @-%'
     abbr --add jjgr jj git remote
@@ -88,6 +91,8 @@ if status is-interactive
     abbr --add ga git add
     abbr --add gitbranch git branch
     abbr --add gb git branch
+    abbr --add gitcheckout git checkout
+    abbr --add gco git checkout
     abbr --add gitclone git clone
     abbr --add gcl git clone
     abbr --add gitcommit --set-cursor 'git commit -m "%"'
@@ -114,7 +119,9 @@ if status is-interactive
     abbr --add gitremote git remote -v
     abbr --add gr git remote -v
     abbr --add git.submodule.add git submodule add
+    abbr --add gsma git submodule add
     abbr --add git.submodule.update 'git submodule init && git submodule update --recursive --remote'
+    abbr --add gsmu 'git submodule init && git submodule update --recursive --remote'
     abbr --add git.modified 'git status --porcelain | grep "M " | awk -F"M " \'{print $2}\''
     abbr --add git.added 'git status --porcelain | grep "A " | awk -F"A " \'{print $2}\''
     abbr --add git.deleted 'git status --porcelain | grep "D " | awk -F "D " \'{print $2}\''

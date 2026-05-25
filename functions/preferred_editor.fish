@@ -6,7 +6,7 @@ Args:
     -g/--gui: Include and prefer GUI editors."
 end
 
-function preferred_editor
+function preferred_editor --description 'Get the preferred command-line or GUI editor'
     argparse h/help g/gui -- $argv
     if set -q _flag_help
         _preferred_editor_usage
