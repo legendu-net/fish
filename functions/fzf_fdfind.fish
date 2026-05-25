@@ -10,7 +10,7 @@ Args:
     dir: The directory (default to .) under which to search for files."
 end
 
-function fzf_fdfind
+function fzf_fdfind --description 'Search files by name with fzf and open selections'
     argparse h/help e/edit c/cmd= t/type= -- $argv
     if set -q _flag_help
         _fzf_fdfind_usage

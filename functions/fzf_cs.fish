@@ -5,7 +5,7 @@ Args:
     dir: The directory (default to .) under which to search for sub directories."
 end
 
-function fzf_cs
+function fzf_cs --description 'Search directories with fzf and cd into the selected one'
     argparse h/help -- $argv
     if set -q _flag_help
         _fzf_cs_usage

@@ -1,4 +1,4 @@
-function expand_all_abbr
+function expand_all_abbr --description 'Expand all abbreviations in the current command line'
     commandline -f beginning-of-line
     while true
         set -l pos (commandline -C)
