@@ -53,11 +53,18 @@ function jj_check_conflicts --description 'Check if @- has been merged into a bo
     end
 
     set -l merged_commits (jj log -r "@- & ::$bookmark" --no-graph -T "commit_id")
+    set -l log_status $status
+    if test $log_status -ne 0
+        echo (set_color $fish_color_error)"Error: Failed to query merge status of @- against $bookmark."(set_color normal) >&2
+        return $log_status
+    end
     if test -n "$merged_commits"
         echo (set_color yellow)"Warning: @- has been merged into $bookmark. Auto-rebasing..."(set_color normal)
         jj rebase --onto $bookmark
         if test $status -eq 0
             echo (set_color green)"Rebase is done. You can revert this change using 'jj undo'."(set_color normal)
         end
+    else
+        echo (set_color green)"@- is not merged into $bookmark. Safe to continue working on it."(set_color normal)
     end
 end
