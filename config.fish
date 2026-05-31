@@ -131,6 +131,11 @@ if status is-interactive
     abbr --add git.untracked 'git status --porcelain | grep "?? " | awk -F "[?][?] " \'{print $2}\''
     abbr --add colordiff git diff --no-index
     # -----------------------------------------------------
+    abbr --add gop gopass
+    abbr --add gopi gopass insert
+    abbr --add gops gopass show
+    abbr --add gopsgh gopass show api_keys/github
+    # -----------------------------------------------------
     abbr --add tbc toolbox create
     abbr --add tbe toolbox enter
     abbr --add tbl toolbox list
