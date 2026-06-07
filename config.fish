@@ -200,6 +200,7 @@ if status is-interactive
     abbr --add hgdiff hg diff
     abbr --add hgstatus hg status
     # -----------------------------------------------------
+    abbr --add rm rip
     if command -q eza
         abbr --add ls eza --color=auto -lh
         abbr --add ls.media 'eza *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
