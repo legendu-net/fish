@@ -8,6 +8,10 @@ if status is-interactive
     fish_add_path --path --append /home/linuxbrew/.linuxbrew/bin
     fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS
     # =====================================================
+    if not set -q SSH_AUTH_SOCK
+        eval (ssh-agent -c) > /dev/null
+    end
+    # =====================================================
     if command -q nvim
         set -g EDITOR nvim
         set -g VISUAL nvim
