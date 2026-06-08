@@ -9,7 +9,7 @@ if status is-interactive
     fish_add_path --path --append /Applications/WezTerm.app/Contents/MacOS
     # =====================================================
     if not set -q SSH_AUTH_SOCK
-        eval (ssh-agent -c) > /dev/null
+        eval (ssh-agent -c) >/dev/null
     end
     # =====================================================
     if command -q nvim
@@ -47,11 +47,11 @@ if status is-interactive
     abbr --add jjcc jj_check_conflicts
     abbr --add jjs jj status
     abbr --add jjd jj diff
+    abbr --add jjds 'jj diff | agy --model "Gemini 3.5 Flash (Low)" --prompt "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add jjr jj restore
     abbr --add jjrs jj restore
     abbr --add jjc --set-cursor 'jj commit -m "%"'
     abbr --add jjde --set-cursor 'jj describe -m "%"'
-    abbr --add jjds --set-cursor 'jj describe -m "%"'
     abbr --add jjn jj new
     abbr --add jjsp jj split
     abbr --add jja jj abandon
