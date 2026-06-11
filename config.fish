@@ -61,6 +61,8 @@ if status is-interactive
     abbr --add jjrbom jj rebase --onto main
     abbr --add jjrbod jj rebase --onto dev
     abbr --add jjsy jj sync
+    abbr --add jjsu 'jj sync && jj upload --all'
+    abbr --add jjsyu 'jj sync && jj upload --all'
     abbr --add jjun jj undo
     abbr --add jjfu jj file untrack
     abbr --add jjup jj upload --all
@@ -104,7 +106,7 @@ if status is-interactive
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
-    abbr --add gdss 'git diff --staged | gemini --skip-trust -p "Write a concise conventional commit message for this diff. Output ONLY the message."'
+    abbr --add gdss 'git diff --staged | agy --model "Gemini 3.5 Flash (Low)" --prompt "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add gdni git diff --no-index
     abbr --add gitfetch git fetch
     abbr --add gfo git fetch origin
