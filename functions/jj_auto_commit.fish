@@ -34,7 +34,7 @@ function jj_auto_commit --description 'Auto-generate a commit message and open i
     end
 
     echo "Generating commit message with Gemini..."
-    set -l msg (printf '%s\n' "$diff_output" | agy --prompt 'write a concise conventional commit message for this diff. Output ONLY the message' --model 'Gemini 3.5 Flash (Low)')
+    set -l msg (printf '%s\n' "$diff_output" | agy --prompt 'Write a concise conventional commit message for this diff. Output ONLY the message' --model 'Gemini 3.5 Flash (Low)')
 
     if test $status -ne 0
         echo (set_color $fish_color_error)"Error: Failed to generate commit message."(set_color normal) >&2

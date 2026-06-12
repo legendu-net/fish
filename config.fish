@@ -30,6 +30,8 @@ if status is-interactive
         abbr --add vim nvim
         abbr --add vi nvim
         abbr --add vim.gi nvim .gitignore
+        abbr --add vim.gemini 'AVANTE_GEMINI_API_KEY=(gopass show gemini/token) nvim'
+        abbr --add nvim.gemini 'AVANTE_GEMINI_API_KEY=(gopass show gemini/token) nvim'
     end
     # -----------------------------------------------------
     abbr --add mkdir.workflow mkdir -p .github/workflows/
