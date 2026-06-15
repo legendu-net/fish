@@ -19,7 +19,14 @@ function trace_dir_upwards --description 'Trace directories upwards until target
             echo (set_color $fish_color_error)"Error: $name is not found in $argv[1]!"(set_color normal) >&2
             return 1
         end
-        set dir (path dirname "$dir")
+
+        set -l parent (path dirname "$dir")
+        if test "$parent" = "$dir"
+            echo (set_color $fish_color_error)"Error: $name is not found in $argv[1]!"(set_color normal) >&2
+            return 1
+        end
+
+        set dir "$parent"
         set stem (path basename "$dir")
     end
 
