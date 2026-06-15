@@ -49,6 +49,7 @@ if status is-interactive
     abbr --add jjcc jj_check_conflicts
     abbr --add jjs jj status
     abbr --add jjd jj diff
+    abbr --add jjdi jj diff
     abbr --add jjds 'jj diff | agy --model "Gemini 3.5 Flash (Low)" --prompt "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add jjr jj restore
     abbr --add jjrs jj restore
@@ -210,7 +211,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add rm rip
     if command -q eza
-        abbr --add ls eza --color=auto -lh
+        abbr --add ls eza --color=auto -lhH
         abbr --add ls.media 'eza *.{jpg,jpeg,png,mp3,avi,mkv,mov,mp4,wmv,webm}'
         abbr --add ls.archive 'eza *.{zip,7zip,rar,gz,xz,zstd,ztd,tar}'
         abbr --add ls.package 'eza *.{air,deb,rpm,appimage,snap,flatpak*,whl,jar,apk}'
