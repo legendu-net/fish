@@ -243,7 +243,11 @@ if status is-interactive
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
-    abbr --add zat 'zellij attach (zellij ls -s | fzf)'
+    # -----------------------------------------------------
+    abbr --add z --set-cursor 'zellij -s "%"'
+    abbr --add zj --set-cursor 'zellij -s "%"'
+    abbr --add zja 'zellij attach (zellij ls -s | fzf)'
+    abbr --add za 'zellij attach (zellij ls -s | fzf)'
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
