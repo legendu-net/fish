@@ -53,8 +53,8 @@ if status is-interactive
     abbr --add jjds 'jj diff | agy --model "Gemini 3.5 Flash (Low)" --prompt "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add jjr jj restore
     abbr --add jjrs jj restore
-    abbr --add jjc --set-cursor 'jj commit -m "%"'
-    abbr --add jjde --set-cursor 'jj describe -m "%"'
+    abbr --add jjc 'jj commit --editor'
+    abbr --add jjde 'jj describe --editor'
     abbr --add jjn jj new
     abbr --add jjsp jj split
     abbr --add jja jj abandon
@@ -104,8 +104,8 @@ if status is-interactive
     abbr --add gco git checkout
     abbr --add gitclone git clone
     abbr --add gcl git clone
-    abbr --add gitcommit --set-cursor 'git commit -m "%"'
-    abbr --add gc --set-cursor 'git commit -m "%"'
+    abbr --add gitcommit 'git commit'
+    abbr --add gc 'git commit'
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
