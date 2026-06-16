@@ -26,5 +26,6 @@
         "ReneSaarsoo.sql-formatter-vsc"
       ]
     }
-  }
+  },
+  "postStartCommand": "icon data --force && icon git -c && icon fish -c && icon nvim -c"
 }
