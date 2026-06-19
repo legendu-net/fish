@@ -146,15 +146,18 @@ if status is-interactive
     abbr --add gopsgh gopass show api_keys/github
     # -----------------------------------------------------
     abbr --add tbc toolbox create
-    abbr --add tbe toolbox enter
+    abbr --add tbe SHELL=fish toolbox enter
     abbr --add tbl toolbox list
-    abbr --add tbcejhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox enter jupyterhub-ds'
+    abbr --add tbcejhub 'SHELL=fish toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox enter jupyterhub-ds'
     abbr --add tbcrjhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox run -c jupyterhub-ds /scripts/init.sh'
-    abbr --add tbcevscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox enter code-server'
+    abbr --add tbcevscode 'SHELL=fish toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox enter code-server'
     abbr --add tbcrvscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox run -c code-server /scripts/init.sh'
     # -----------------------------------------------------
+    abbr --add pm podman
     abbr --add pmi podman images
+    abbr --add pmip podman image prune -f
     abbr --add pmri podman rmi
+    abbr --add pmrmi podman rmi
     abbr --add pmr podman rm
     abbr --add pmp podman pull
     abbr --add pms podman stop
