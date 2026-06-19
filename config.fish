@@ -277,6 +277,9 @@ if status is-interactive
         --autocomplete \
         --autosuggest smart \
         --line-numbers'
+    # -----------------------------------------------------
+    abbr --add calude claude
+    abbr --add c claude
     # =====================================================
     abbr --add flatpak.zed flatpak run dev.zed.Zed
     abbr --add flatpak.keepassxc flatpak run org.keepassxc.KeePassXC
