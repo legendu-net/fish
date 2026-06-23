@@ -236,6 +236,7 @@ if status is-interactive
     abbr --add ... cd ../..
     abbr --add .... cd ../../..
     abbr --add csh cdh
+    abbr --add e exit
     # -----------------------------------------------------
     abbr --add rsync.progress rsync -avh --info=progress2
     abbr --add rsync.progress.pc proxychains rsync -avh --info=progress2
@@ -247,10 +248,8 @@ if status is-interactive
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
     # -----------------------------------------------------
-    abbr --add z --set-cursor 'zellij -s "%"'
-    abbr --add zj --set-cursor 'zellij -s "%"'
-    abbr --add zja 'zellij attach (zellij ls -s | fzf)'
-    abbr --add za 'zellij attach (zellij ls -s | fzf)'
+    abbr --add z zellij -l welcome
+    abbr --add zj zellij -l welcome
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
