@@ -1,6 +1,6 @@
-function _jj_check_conflicts_usage
+function _jj_sync_base_usage
     echo "Check if @- has been merged/advanced and auto rebase the working copy if needed.
-Syntax: jj_check_conflicts [-h/--help] [bookmark]
+Syntax: jj_sync_base [-h/--help] [bookmark]
 Args:
     -h/--help: Show the help doc.
     bookmark: The target bookmark. If specified, @- is only checked against it
@@ -10,11 +10,11 @@ Args:
         'jj git push --change @-') is followed forward when it has advanced."
 end
 
-function _jj_check_conflicts_bookmark_exists --argument-names bookmark
+function _jj_sync_base_bookmark_exists --argument-names bookmark
     jj log -r "$bookmark" --no-graph -T "" >/dev/null 2>&1
 end
 
-function _jj_check_conflicts_merged_into --argument-names bookmark
+function _jj_sync_base_merged_into --argument-names bookmark
     # Return 2 (and print an error) if the query fails; otherwise return 0 when
     # @- is an ancestor of (i.e. has been merged into) $bookmark, 1 when not.
     set -l merged_commits (jj log -r "@- & ::$bookmark" --no-graph -T "commit_id")
@@ -26,10 +26,10 @@ function _jj_check_conflicts_merged_into --argument-names bookmark
     test -n "$merged_commits"
 end
 
-function _jj_check_conflicts_warn_if_merged --argument-names bookmark
+function _jj_sync_base_warn_if_merged --argument-names bookmark
     # Return 2 on query error, 0 when @- has merged into $bookmark (a warning is
     # printed and the caller should rebase onto it), 1 when @- has not merged.
-    _jj_check_conflicts_merged_into "$bookmark"
+    _jj_sync_base_merged_into "$bookmark"
     set -l merged_status $status
     if test $merged_status -eq 2
         return 2
@@ -40,11 +40,11 @@ function _jj_check_conflicts_warn_if_merged --argument-names bookmark
     return 1
 end
 
-function jj_check_conflicts --description 'Check if @- has been merged/advanced and auto rebase if needed'
+function jj_sync_base --description 'Check if @- has been merged/advanced and auto rebase if needed'
     argparse h/help -- $argv
     or return 1
     if set -q _flag_help
-        _jj_check_conflicts_usage
+        _jj_sync_base_usage
         return 0
     end
 
@@ -70,7 +70,7 @@ function jj_check_conflicts --description 'Check if @- has been merged/advanced 
 
     if test (count $argv) -gt 0
         set explicit_bookmark $argv[1]
-        if not _jj_check_conflicts_bookmark_exists "$explicit_bookmark"
+        if not _jj_sync_base_bookmark_exists "$explicit_bookmark"
             echo (set_color $fish_color_error)"Error: Bookmark '"(set_color -o -i -u cyan)"$explicit_bookmark"(set_color normal)(set_color $fish_color_error)"' does not exist."(set_color normal) >&2
             return 1
         end
@@ -94,7 +94,7 @@ function jj_check_conflicts --description 'Check if @- has been merged/advanced 
     # Manual override: keep the original behaviour of checking @- against the
     # given bookmark only.
     if test -n "$explicit_bookmark"
-        _jj_check_conflicts_warn_if_merged "$explicit_bookmark"
+        _jj_sync_base_warn_if_merged "$explicit_bookmark"
         set -l merged_status $status
         if test $merged_status -eq 2
             return 1
@@ -109,14 +109,14 @@ function jj_check_conflicts --description 'Check if @- has been merged/advanced 
 
     # Auto mode. Trunk wins: if @- has merged into dev/main, rebase onto it.
     set -l trunk ""
-    if _jj_check_conflicts_bookmark_exists dev
+    if _jj_sync_base_bookmark_exists dev
         set trunk dev
-    else if _jj_check_conflicts_bookmark_exists main
+    else if _jj_sync_base_bookmark_exists main
         set trunk main
     end
 
     if test -n "$trunk"
-        _jj_check_conflicts_warn_if_merged "$trunk"
+        _jj_sync_base_warn_if_merged "$trunk"
         set -l merged_status $status
         if test $merged_status -eq 2
             return 1
@@ -128,7 +128,7 @@ function jj_check_conflicts --description 'Check if @- has been merged/advanced 
 
     # Not merged into trunk: follow the push bookmark forward when it has advanced
     # to a strict descendant of @- (a safe fast-forward of our base).
-    if test -n "$push_bookmark"; and _jj_check_conflicts_bookmark_exists "$push_bookmark"
+    if test -n "$push_bookmark"; and _jj_sync_base_bookmark_exists "$push_bookmark"
         # A conflicted (divergent) bookmark resolves to multiple commits; rebasing
         # onto its ambiguous name would fail, so warn and skip instead.
         # The 'commit_id ++ "\n"' template is required, not redundant: with

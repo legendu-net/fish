@@ -46,7 +46,7 @@ if status is-interactive
         isatty stdout; and echo
         return $ret
     end
-    abbr --add jjcc jj_check_conflicts
+    abbr --add jjsb jj_sync_base
     abbr --add jjs jj status
     abbr --add jjd jj diff
     abbr --add jjdi jj diff
