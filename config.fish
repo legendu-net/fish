@@ -250,7 +250,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add z zellij -l welcome
     abbr --add zj zellij -l welcome
-    abbr --add zbox 'zellij action new-pane -- cmd toolbox enter jupyterhub-ds'
+    abbr --add zbox 'zellij action new-pane -- cmd toolbox enter (toolbox_version jupyterhub-ds)'
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
