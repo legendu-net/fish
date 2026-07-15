@@ -247,6 +247,10 @@ if status is-interactive
     abbr --add z zellij -l welcome
     abbr --add zj zellij -l welcome
     abbr --add zbox 'begin; set -l c (tbx version); and zellij action new-pane -- cmd toolbox enter $c; end'
+    abbr --add zw zellij web
+    abbr --add zjw zellij web
+    abbr --add zwct zellij web --create-token
+    abbr --add zjwct zellij web --create-token
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
