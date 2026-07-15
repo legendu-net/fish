@@ -64,11 +64,11 @@ if status is-interactive
     abbr --add jjrbom jj rebase --onto main
     abbr --add jjrbod jj rebase --onto dev
     abbr --add jjsy jj sync
-    abbr --add jjsu 'jj sync && jj upload --all'
-    abbr --add jjsyu 'jj sync && jj upload --all'
+    abbr --add jjsu 'jj sync && jj upload'
+    abbr --add jjsyu 'jj sync && jj upload'
     abbr --add jjun jj undo
     abbr --add jjfu jj file untrack
-    abbr --add jjup jj upload --all
+    abbr --add jjup jj upload
     abbr --add jjb jj bookmark
     abbr --add jjbl jj bookmark list
     abbr --add jjbc jj bookmark create
