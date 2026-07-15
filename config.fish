@@ -145,14 +145,9 @@ if status is-interactive
     abbr --add gops gopass show
     abbr --add gopsgh gopass show api_keys/github
     # -----------------------------------------------------
-    abbr --add tbc toolbox create
-    abbr --add tbe SHELL=fish toolbox enter
-    abbr --add ftbe fzf_toolbx_enter
     abbr --add tbl toolbox list
-    abbr --add tbcejhub 'SHELL=fish toolbox enter (tbx version jupyterhub-ds)'
-    abbr --add tbcrjhub 'toolbox create -c jupyterhub-ds -i quay.io/legendu/jupyterhub-ds:next && toolbox run -c jupyterhub-ds /scripts/init.sh'
-    abbr --add tbcevscode 'SHELL=fish toolbox enter (tbx version code-server)'
-    abbr --add tbcrvscode 'toolbox create -c code-server -i quay.io/legendu/vscode-server:next && toolbox run -c code-server /scripts/init.sh'
+    abbr --add tbe 'begin; set -l c (tbx version); and SHELL=fish toolbox enter $c; end'
+    abbr --add ftbe fzf_toolbx_enter
     # -----------------------------------------------------
     abbr --add pm podman
     abbr --add pmi podman images
@@ -251,7 +246,7 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add z zellij -l welcome
     abbr --add zj zellij -l welcome
-    abbr --add zbox 'zellij action new-pane -- cmd toolbox enter (tbx version jupyterhub-ds)'
+    abbr --add zbox 'begin; set -l c (tbx version); and zellij action new-pane -- cmd toolbox enter $c; end'
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------

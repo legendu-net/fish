@@ -8,13 +8,14 @@ function _tbx_usage
 Versioned containers are named <base> (version 1) or <base>-N (version N>1).
 Known bases: "(string join ', ' (_tbx_bases))".
 Syntax:
-    tbx version [-n/--next] <base>
+    tbx version [-n/--next] [<base>]
     tbx ls [<base>...]
     tbx clean [-f/--force] [-r/--renumber] [<base>...]
     tbx renumber [-f/--force] [<base>...]
 Sub-commands (each has a one-letter alias):
     version (v):  Print the newest running version's container name, creating
         version 1 if nothing is running. With --next, create the next version.
+        <base> is optional; when omitted, pick one interactively with fzf.
     ls (l):       List every version of each base and how many processes run inside it.
     clean (c):    Remove old (non-newest) containers that are not in use.
                   -f/--force: Remove without prompting for confirmation.
@@ -346,17 +347,31 @@ function _tbx_version
     or return 1
     if set -q _flag_help
         echo "Print the versioned container name to use for <base>, creating it if
-needed. With --next, create the next version instead.
-Syntax: tbx version [-n/--next] <base>
+needed. With --next, create the next version instead. When <base> is omitted,
+pick one interactively with fzf.
+Syntax: tbx version [-n/--next] [<base>]
     -n/--next: Create the next version (newest running + 1) and print its name."
         return 0
     end
 
-    if test (count $argv) -ne 1
-        echo (set_color $fish_color_error)"Error: exactly one base container name is required."(set_color normal) >&2
+    if test (count $argv) -gt 1
+        echo (set_color $fish_color_error)"Error: at most one base container name is allowed."(set_color normal) >&2
         return 1
     end
     set -l base $argv[1]
+
+    if test -z "$base"
+        # No base given: let the user pick one interactively.
+        if not command -q fzf
+            echo (set_color $fish_color_error)"Error: 'fzf' is not installed; specify a base explicitly."(set_color normal) >&2
+            return 1
+        end
+        set base (_tbx_bases | fzf --height=40% --reverse --prompt='base> ')
+        # fzf returns non-zero (and prints nothing) when the user cancels.
+        if test -z "$base"
+            return 1
+        end
+    end
 
     set -l image (_tbx_image "$base")
     set -l image_status $status
