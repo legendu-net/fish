@@ -8,13 +8,23 @@ function _tbx_usage
 Versioned containers are named <base> (version 1) or <base>-N (version N>1).
 Known bases: "(string join ', ' (_tbx_bases))".
 Syntax:
-    tbx version [-n/--next] [<base>]
+    tbx version [<base>]
+    tbx new [-f/--force] [<base>]
+    tbx procs [<base>]
     tbx ls [<base>...]
     tbx clean [-f/--force] [<base>...]
 Sub-commands (each has a one-letter alias):
     version (v):  Print the newest running version's container name, creating
-        version 1 if nothing is running. With --next, create the next version.
+        version 1 if nothing is running.
         <base> is optional; when omitted, pick one interactively with fzf.
+    new (n):      Pull the latest image; create the next version (above every
+        existing container) only when the image changed, otherwise reuse and
+        print the latest existing container. -f/--force: create even when the
+        image is not updated.
+        <base> is optional; when omitted, pick one interactively with fzf.
+    procs (p):    Print (then run) a 'procs' command showing the detailed
+        processes inside the base's newest running container. <base> is
+        optional; when omitted, pick one interactively with fzf.
     ls (l):       List every version of each base and how many processes run inside it.
     clean (c):    Remove old (non-newest) containers that are not in use.
                   -f/--force: Remove without prompting for confirmation.
@@ -61,29 +71,43 @@ function _tbx_all_versions --argument-names base
     end
 end
 
+function _tbx_latest_name --argument-names base
+    # Echo the newest existing container's name for <base> (running or stopped);
+    # return non-zero (echoing nothing) when none exist.
+    set -l rows (_tbx_all_versions "$base")
+    set -q rows[1]
+    or return 1
+    string split -f2 ' ' -- $rows[-1]
+end
+
+function _tbx_cgroup_procs --argument-names name
+    # Echo the path to <name>'s unified-hierarchy 'cgroup.procs' file by mapping
+    # the container PID's cgroup onto it. Echo nothing (returning non-zero) when
+    # the container has no live PID or no cgroup v2 '0::' line (cgroup v1/hybrid
+    # host, or the container exited mid-call) -- callers must not fall back to the
+    # host root. 'podman top' can't be used here because toolbox shares the host
+    # PID namespace.
+    set -l pid (podman inspect "$name" --format '{{.State.Pid}}' 2>/dev/null)
+    if test -z "$pid"; or test "$pid" = 0
+        return 1
+    end
+    # cgroup v2 exposes a single '0::<path>' line; map it to the procs file.
+    set -l rel (string match -rg '^0::(.*)' -- (cat /proc/$pid/cgroup 2>/dev/null))
+    if test -z "$rel"
+        return 1
+    end
+    echo "/sys/fs/cgroup$rel/cgroup.procs"
+end
+
 function _tbx_proc_count --argument-names name
     # Print how many processes run inside <name> beyond its lone init process
     # (0 when created/exited or idle). Read from the container's cgroup, which
     # captures every kind of usage -- interactive shells, 'toolbox run' background
     # jobs, and daemons alike -- unlike counting shells or ptys. A started but
     # unused toolbox container holds exactly one process: 'toolbox init-container'
-    # (a sleep); anything more means the container is in use. 'podman top' can't
-    # be used here because toolbox shares the host PID namespace.
-    set -l pid (podman inspect "$name" --format '{{.State.Pid}}' 2>/dev/null)
-    if test -z "$pid"; or test "$pid" = 0
-        echo 0
-        return
-    end
-    # cgroup v2 exposes a single '0::<path>' line; map it to the procs file.
-    set -l rel (string match -rg '^0::(.*)' -- (cat /proc/$pid/cgroup 2>/dev/null))
-    if test -z "$rel"
-        # No unified-hierarchy line (cgroup v1/hybrid host, or the container
-        # exited mid-call). Report 0 rather than falling back to the host root.
-        echo 0
-        return
-    end
-    set -l procs "/sys/fs/cgroup$rel/cgroup.procs"
-    if not test -r "$procs"
+    # (a sleep); anything more means the container is in use.
+    set -l procs (_tbx_cgroup_procs "$name")
+    if test -z "$procs"; or not test -r "$procs"
         echo 0
         return
     end
@@ -239,39 +263,58 @@ function _tbx_max_running --argument-names base
     echo "$max"
 end
 
+function _tbx_max_version --argument-names base
+    # Print the highest version among all existing containers (running or
+    # stopped) matching <base>; print 0 when none exist. Used to pick the next
+    # free version so 'new' never collides with a stopped container.
+    set -l rows (_tbx_all_versions "$base")
+    set -q rows[1]
+    or begin
+        echo 0
+        return
+    end
+    string split -f1 ' ' -- $rows[-1]
+end
+
 function _tbx_exists --argument-names name
     # Return 0 if a container named exactly <name> exists (running or stopped).
     contains -- "$name" (podman ps -a --format '{{.Names}}')
 end
 
-function _tbx_pull_create --argument-names name image
-    # Pull the latest image, then create the container. All output goes to
-    # stderr so stdout stays clean for the resolved container name.
+function _tbx_image_id --argument-names image
+    # Echo the local image's ID, or nothing when the image is not present.
+    podman image inspect --format '{{.Id}}' "$image" 2>/dev/null
+end
+
+function _tbx_pull --argument-names image
+    # Pull the latest image. All output goes to stderr so stdout stays clean.
     echo (set_color yellow)"Pulling "(set_color -o -i -u cyan)"$image"(set_color normal)(set_color yellow)"..."(set_color normal) >&2
     podman pull "$image" >&2
-    or return $status
+end
+
+function _tbx_create --argument-names name image
+    # Create the container. All output goes to stderr so stdout stays clean.
     echo (set_color yellow)"Creating '"(set_color -o -i -u cyan)"$name"(set_color normal)(set_color yellow)"' from "(set_color -o -i -u cyan)"$image"(set_color normal)(set_color yellow)"..."(set_color normal) >&2
     toolbox create -c "$name" -i "$image" >&2
 end
 
-function _tbx_version
-    argparse h/help n/next -- $argv
-    or return 1
-    if set -q _flag_help
-        echo "Print the versioned container name to use for <base>, creating it if
-needed. With --next, create the next version instead. When <base> is omitted,
-pick one interactively with fzf.
-Syntax: tbx version [-n/--next] [<base>]
-    -n/--next: Create the next version (newest running + 1) and print its name."
-        return 0
-    end
+function _tbx_pull_create --argument-names name image
+    # Pull the latest image, then create the container. All output goes to
+    # stderr so stdout stays clean for the resolved container name.
+    _tbx_pull "$image"
+    or return $status
+    _tbx_create "$name" "$image"
+end
 
+function _tbx_pick_base
+    # Resolve the single base to act on: validate the lone argument, or pick one
+    # interactively with fzf when none is given. Echo the validated base name;
+    # return non-zero (with an error on stderr) on misuse, cancel, or unknown base.
     if test (count $argv) -gt 1
         echo (set_color $fish_color_error)"Error: at most one base container name is allowed."(set_color normal) >&2
         return 1
     end
     set -l base $argv[1]
-
     if test -z "$base"
         # No base given: let the user pick one interactively.
         if not command -q fzf
@@ -284,13 +327,26 @@ Syntax: tbx version [-n/--next] [<base>]
             return 1
         end
     end
-
-    set -l image (_tbx_image "$base")
-    set -l image_status $status
-    if test $image_status -ne 0
+    if not _tbx_image "$base" >/dev/null
         echo (set_color $fish_color_error)"Error: unknown base '"(set_color -o -i -u cyan)"$base"(set_color normal)(set_color $fish_color_error)"'. Valid bases: "(string join ', ' (_tbx_bases))"."(set_color normal) >&2
         return 1
     end
+    echo "$base"
+end
+
+function _tbx_version
+    argparse h/help -- $argv
+    or return 1
+    if set -q _flag_help
+        echo "Print the versioned container name to use for <base>, creating version 1
+if nothing is running. When <base> is omitted, pick one interactively with fzf.
+Syntax: tbx version [<base>]"
+        return 0
+    end
+
+    set -l base (_tbx_pick_base $argv)
+    or return 1
+    set -l image (_tbx_image "$base")
 
     for cmd in podman toolbox
         if not command -q $cmd
@@ -301,20 +357,7 @@ Syntax: tbx version [-n/--next] [<base>]
 
     set -l max_running (_tbx_max_running "$base")
 
-    if set -q _flag_next
-        set -l ver (math "$max_running + 1")
-        set -l name (_tbx_name "$base" "$ver")
-        if _tbx_exists "$name"
-            echo (set_color $fish_color_error)"Error: container '"(set_color -o -i -u cyan)"$name"(set_color normal)(set_color $fish_color_error)"' already exists. Remove it first or start it."(set_color normal) >&2
-            return 1
-        end
-        _tbx_pull_create "$name" "$image"
-        or return $status
-        echo "$name"
-        return 0
-    end
-
-    # Default mode: return the newest running version's name.
+    # Return the newest running version's name.
     if test "$max_running" -gt 0
         _tbx_name "$base" "$max_running"
         return 0
@@ -333,6 +376,101 @@ Syntax: tbx version [-n/--next] [<base>]
     echo "$name"
 end
 
+function _tbx_new
+    argparse h/help f/force -- $argv
+    or return 1
+    if set -q _flag_help
+        echo "Pull the latest image for <base> and create the next version (above
+every existing container), printing its name. When the image is not updated,
+skip creating and print the latest existing container instead. When <base> is
+omitted, pick one interactively with fzf.
+Syntax: tbx new [-f/--force] [<base>]
+    -f/--force: Create a new container even when the image is not updated."
+        return 0
+    end
+
+    set -l base (_tbx_pick_base $argv)
+    or return 1
+    set -l image (_tbx_image "$base")
+
+    for cmd in podman toolbox
+        if not command -q $cmd
+            echo (set_color $fish_color_error)"Error: '$cmd' command is not installed."(set_color normal) >&2
+            return 1
+        end
+    end
+
+    # Pull first, then decide: skip creating when the image is unchanged and an
+    # existing container can be reused, unless --force is given.
+    set -l old_id (_tbx_image_id "$image")
+    _tbx_pull "$image"
+    or return $status
+    set -l new_id (_tbx_image_id "$image")
+
+    if not set -q _flag_force; and test -n "$old_id"; and test "$old_id" = "$new_id"
+        set -l latest (_tbx_latest_name "$base")
+        if test -n "$latest"
+            echo (set_color yellow)"Image "(set_color -o -i -u cyan)"$image"(set_color normal)(set_color yellow)" is not updated; reusing '"(set_color -o -i -u cyan)"$latest"(set_color normal)(set_color yellow)"' (use -f/--force to create anyway)."(set_color normal) >&2
+            echo "$latest"
+            return 0
+        end
+        # No existing container to reuse: create despite the unchanged image.
+    end
+
+    # Create the next free version (above every existing container, running or
+    # stopped) so the name never collides with a leftover stopped container.
+    set -l ver (math (_tbx_max_version "$base") + 1)
+    set -l name (_tbx_name "$base" "$ver")
+    _tbx_create "$name" "$image"
+    or return $status
+    echo "$name"
+end
+
+function _tbx_procs
+    argparse h/help -- $argv
+    or return 1
+    if set -q _flag_help
+        echo "Show the detailed processes running inside a base's newest running
+container. The 'procs' command that renders them is printed to stdout first so
+it can be copied and customized, then run. When <base> is omitted, pick one
+interactively with fzf.
+Syntax: tbx procs [<base>]"
+        return 0
+    end
+    for cmd in podman procs
+        if not command -q $cmd
+            echo (set_color $fish_color_error)"Error: '$cmd' command is not installed."(set_color normal) >&2
+            return 1
+        end
+    end
+    set -l base (_tbx_pick_base $argv)
+    or return 1
+
+    # 'procs' reads a live cgroup, so target the newest *running* version.
+    set -l max_running (_tbx_max_running "$base")
+    if test "$max_running" -le 0
+        echo (set_color $fish_color_error)"Error: no running container for base '"(set_color -o -i -u cyan)"$base"(set_color normal)(set_color $fish_color_error)"'."(set_color normal) >&2
+        return 1
+    end
+    set -l name (_tbx_name "$base" "$max_running")
+
+    set -l procs (_tbx_cgroup_procs "$name")
+    if test -z "$procs"; or not test -r "$procs"
+        echo (set_color $fish_color_error)"Error: could not locate or read the cgroup for '"(set_color -o -i -u cyan)"$name"(set_color normal)(set_color $fish_color_error)"'."(set_color normal) >&2
+        return 1
+    end
+
+    # Run the command, then print it (blank line on each side) so the user can
+    # copy and tweak it. The printed line is a quoted literal that matches the
+    # command just run: fish performs no command substitution inside double
+    # quotes, so '(cat $procs)' stays verbatim, keeping the printed command
+    # self-contained and re-runnable (it re-reads the live cgroup on each run).
+    procs --insert State --or (cat $procs)
+    echo
+    echo "procs --insert State --or (cat $procs)"
+    echo
+end
+
 function tbx --description 'Manage versioned toolbox/podman containers'
     set -l sub $argv[1]
     if test -z "$sub"
@@ -343,6 +481,10 @@ function tbx --description 'Manage versioned toolbox/podman containers'
     switch "$sub"
         case version v
             _tbx_version $argv[2..]
+        case new n
+            _tbx_new $argv[2..]
+        case procs p
+            _tbx_procs $argv[2..]
         case ls l
             _tbx_ls $argv[2..]
         case clean c
