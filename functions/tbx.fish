@@ -10,8 +10,7 @@ Known bases: "(string join ', ' (_tbx_bases))".
 Syntax:
     tbx version [-n/--next] [<base>]
     tbx ls [<base>...]
-    tbx clean [-f/--force] [-r/--renumber] [<base>...]
-    tbx renumber [-f/--force] [<base>...]
+    tbx clean [-f/--force] [<base>...]
 Sub-commands (each has a one-letter alias):
     version (v):  Print the newest running version's container name, creating
         version 1 if nothing is running. With --next, create the next version.
@@ -19,11 +18,7 @@ Sub-commands (each has a one-letter alias):
     ls (l):       List every version of each base and how many processes run inside it.
     clean (c):    Remove old (non-newest) containers that are not in use.
                   -f/--force: Remove without prompting for confirmation.
-                  -r/--renumber: After cleaning, compact survivors to 1..N.
-    renumber (r): Compact each base's versions to a gap-free 1..N sequence
-                  (e.g. after clean): code-server-2 -> code-server, etc.
-                  -f/--force: Rename without prompting for confirmation.
-    ls, clean and renumber act on all known bases, or only the base(s) given.
+    ls and clean act on all known bases, or only the base(s) given.
     -h/--help: Show this help doc."
 end
 
@@ -104,8 +99,8 @@ function _tbx_resolve_bases
     # Echo the bases to act on: the validated arguments, or all known bases when
     # none are given. Return non-zero (with an error) on an unknown base.
     if set -q argv[1]
-        # Validate and de-duplicate (preserving order): a repeated base would
-        # otherwise make renumber build a doubled plan and abort mid-rename.
+        # Validate and de-duplicate (preserving order) so a repeated base is
+        # not processed twice.
         set -l seen
         for base in $argv
             if not _tbx_image "$base" >/dev/null
@@ -156,14 +151,13 @@ Syntax: tbx ls [<base>...]"
 end
 
 function _tbx_clean
-    argparse h/help f/force r/renumber -- $argv
+    argparse h/help f/force -- $argv
     or return 1
     if set -q _flag_help
         echo "Remove old (non-newest) containers that are not in use (no process
 running inside them beyond the idle init).
-Syntax: tbx clean [-f/--force] [-r/--renumber] [<base>...]
-    -f/--force:    Remove without prompting for confirmation.
-    -r/--renumber: After cleaning, renumber the survivors to a gap-free 1..N."
+Syntax: tbx clean [-f/--force] [<base>...]
+    -f/--force: Remove without prompting for confirmation."
         return 0
     end
     if not command -q podman
@@ -193,8 +187,7 @@ Syntax: tbx clean [-f/--force] [-r/--renumber] [<base>...]
     end
 
     # Track whether removal is unattended: set up-front by -f/--force, or turned
-    # on mid-loop when the user answers 'a' at the prompt. Kept in scope past the
-    # loop so the --renumber step below can inherit the same choice.
+    # on mid-loop when the user answers 'a' at the prompt.
     set -l force false
     set -q _flag_force; and set force true
 
@@ -219,87 +212,6 @@ Syntax: tbx clean [-f/--force] [-r/--renumber] [<base>...]
             else
                 echo (set_color $fish_color_error)"Error: failed to remove '"(set_color -o -i -u cyan)"$name"(set_color normal)(set_color $fish_color_error)"'."(set_color normal) >&2
             end
-        end
-    end
-
-    # With --renumber, compact the survivors (passing --force through so the
-    # renumber step isn't re-prompted when clean was already unattended -- either
-    # forced up-front or via an 'a' answer at the prompt).
-    if set -q _flag_renumber
-        set -l rn_args
-        test "$force" = true; and set -a rn_args --force
-        _tbx_renumber $rn_args $argv
-    end
-end
-
-function _tbx_renumber
-    argparse h/help f/force -- $argv
-    or return 1
-    if set -q _flag_help
-        echo "Compact each base's version numbers to a gap-free 1..N sequence (e.g. after
-removing an old version): 'code-server-2' -> 'code-server', 'code-server-3' -> 'code-server-2'.
-Syntax: tbx renumber [-f/--force] [<base>...]
-    -f/--force: Rename without prompting for confirmation."
-        return 0
-    end
-    if not command -q podman
-        echo (set_color $fish_color_error)"Error: 'podman' command is not installed."(set_color normal) >&2
-        return 1
-    end
-    set -l bases (_tbx_resolve_bases $argv)
-    or return 1
-
-    # Build the rename plan: map each base's sorted existing versions onto a
-    # gap-free 1..N sequence; containers already in place are left untouched.
-    set -l from
-    set -l to
-    for base in $bases
-        set -l rows (_tbx_all_versions "$base")
-        or continue
-        set -q rows[1]
-        or continue
-        set -l target 0
-        for row in $rows
-            set target (math $target + 1)
-            set -l name (string split -f2 ' ' -- $row)
-            set -l want (_tbx_name "$base" "$target")
-            if test "$name" != "$want"
-                set -a from "$name"
-                set -a to "$want"
-            end
-        end
-    end
-
-    if not set -q from[1]
-        echo (set_color green)"Nothing to renumber."(set_color normal)
-        return 0
-    end
-
-    echo (set_color yellow)"Planned renames:"(set_color normal)
-    for i in (seq (count $from))
-        echo "  "(set_color -o -i -u cyan)"$from[$i]"(set_color normal)" -> "(set_color -o -i -u cyan)"$to[$i]"(set_color normal)
-    end
-
-    if not set -q _flag_force
-        read -l -P (set_color yellow)"Proceed? [y/N] "(set_color normal) reply
-        switch "$reply"
-            case y Y yes
-                # proceed
-            case '*'
-                echo (set_color normal)"Aborted."
-                return 0
-        end
-    end
-
-    # Apply in the plan's order (ascending target within each base), so each
-    # destination slot is guaranteed free -- lower targets are filled first,
-    # vacating the next slot before it is needed.
-    for i in (seq (count $from))
-        if podman rename "$from[$i]" "$to[$i]"
-            echo (set_color green)"Renamed '"(set_color -o -i -u cyan)"$from[$i]"(set_color normal)(set_color green)"' -> '"(set_color -o -i -u cyan)"$to[$i]"(set_color normal)(set_color green)"'."(set_color normal)
-        else
-            echo (set_color $fish_color_error)"Error: failed to rename '"(set_color -o -i -u cyan)"$from[$i]"(set_color normal)(set_color $fish_color_error)"' -> '"(set_color -o -i -u cyan)"$to[$i]"(set_color normal)(set_color $fish_color_error)"'. Aborting."(set_color normal) >&2
-            return 1
         end
     end
 end
@@ -435,8 +347,6 @@ function tbx --description 'Manage versioned toolbox/podman containers'
             _tbx_ls $argv[2..]
         case clean c
             _tbx_clean $argv[2..]
-        case renumber r
-            _tbx_renumber $argv[2..]
         case -h --help
             _tbx_usage
         case '*'
