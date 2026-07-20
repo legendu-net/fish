@@ -5,6 +5,7 @@ end
 
 function jj_auto_commit --description 'Auto-generate a commit message and open it in editor'
     argparse h/help -- $argv
+    or return 1
     if set -q _flag_help
         _jj_auto_commit_usage
         return 0

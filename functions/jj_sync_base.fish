@@ -68,7 +68,7 @@ function jj_sync_base --description 'Check if @- has been merged/advanced and au
     set -l explicit_bookmark ""
     set -l push_bookmark ""
 
-    if test (count $argv) -gt 0
+    if set -q argv[1]
         set explicit_bookmark $argv[1]
         if not _jj_sync_base_bookmark_exists "$explicit_bookmark"
             echo (set_color $fish_color_error)"Error: Bookmark '"(set_color -o -i -u cyan)"$explicit_bookmark"(set_color normal)(set_color $fish_color_error)"' does not exist."(set_color normal) >&2
