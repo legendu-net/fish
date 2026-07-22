@@ -5,6 +5,7 @@ end
 
 function cs --description 'Change directory and list its contents'
     argparse h/help -- $argv
+    or return 1
     if set -q _flag_help
         _cs_usage
         return 0

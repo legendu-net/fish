@@ -10,6 +10,7 @@ end
 
 function fzf_ripgrep --description 'Search files by content using ripgrep and fzf'
     argparse h/help e/edit -- $argv
+    or return 1
     if set -q _flag_help
         _fzf_ripgrep_usage
         return 0
@@ -20,9 +21,14 @@ function fzf_ripgrep --description 'Search files by content using ripgrep and fz
         set editor (preferred_editor -g)
     end
 
+    if test -z "$editor"
+        echo (set_color $fish_color_error)"Error: no editor found. Please install one."(set_color normal) >&2
+        return 1
+    end
+
     set -l search_path .
-    if test (count $argv) -gt 0
-        set search_path $argv
+    if set -q argv[1]
+        set search_path (string escape --no-quoted -- $argv)
     end
 
     # HAVE TO USE THE RELOAD TRICK instead of piping rg results to fzf!

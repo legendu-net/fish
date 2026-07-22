@@ -8,6 +8,7 @@ end
 
 function fzf_history --description 'Search command history with fzf'
     argparse h/help e/edit -- $argv
+    or return 1
     if set -q _flag_help
         _fzf_history_usage
         return 0

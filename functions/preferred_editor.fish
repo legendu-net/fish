@@ -8,6 +8,7 @@ end
 
 function preferred_editor --description 'Get the preferred command-line or GUI editor'
     argparse h/help g/gui -- $argv
+    or return 1
     if set -q _flag_help
         _preferred_editor_usage
         return 0

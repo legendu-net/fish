@@ -5,6 +5,7 @@ end
 
 function fzf_toolbx_enter --description 'Pick a toolbox container with fzf and enter it'
     argparse h/help -- $argv
+    or return 1
     if set -q _flag_help
         _fzf_toolbx_enter_usage
         return 0

@@ -5,6 +5,7 @@ end
 
 function trace_dir_upwards --description 'Trace directories upwards until target directory name matches'
     argparse h/help -- $argv
+    or return 1
     if set -q _flag_help
         _trace_dir_upwards_usage
         return 0
