@@ -83,6 +83,5 @@ based on YAML definitions in `completions/` as well.
 - **Formatting:** Always run `fish_indent` before committing.
 - **Function Naming:** Use `_` prefix for helper functions (e.g., `_fzf_ripgrep_opener`).
 - **Editor Selection:** Use the `preferred_editor` function to determine which editor to launch.
-- **Tool Detection:** Use `command -q <cmd>` to safely check for the existence of external tools
-  before defining abbreviations or functions that depend on them.
+- **Tool Detection:** Assume external tools are installed and allow them to throw errors at runtime if missing. Only use `command -q <cmd>` when defining aliases or abbreviations that are designed to seamlessly replace legacy tools with better modern alternatives (e.g., using `command -q eza` to safely replace `ls`).
 - **Modular Functions:** Keep functions small and focused, each in its own file within `functions/`.
