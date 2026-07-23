@@ -240,7 +240,7 @@ if status is-interactive
     abbr --add fcs SHELL=fish fzf_fdfind -t d -c cs -x --no-multi
     abbr --add fcd SHELL=fish fzf_fdfind -t d -c cs -x --no-multi
     abbr --add ffd SHELL=fish fzf_fdfind
-    abbr --add ffdp SHELL=fish fzf_fdfind -p
+    abbr --add ffdp SHELL=fish fzf_fdfind -p --confirm
     abbr --add frip SHELL=fish fzf_fdfind -c rip --confirm
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
