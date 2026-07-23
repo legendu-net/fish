@@ -13,17 +13,20 @@ Args:
         instead of a child process, so effects like `cd` persist. Use this
         for commands (e.g. cs) that must act on the calling shell.
     --confirm: Imply -x/--exit and, on top of it, log the command and ask for
-        confirmation before running it (useful for destructive commands such as rip).
+        confirmation before running it (useful for destructive commands such as
+        rip). Only y/yes (case insensitive) proceeds, so a bare enter cancels;
+        under -p/--prompt the default flips and a bare enter proceeds.
     -p/--prompt: Imply -x/--exit and ask for the command to run after the files
         have been picked. The prompt is prefilled with the command that would
-        have been run otherwise (-c/--cmd or the preferred editor). The picked
-        files are always appended at the end of whatever is typed, so a trailing
-        comment or separator makes them be dropped or run as a command instead.
-        Clearing the prompt runs the picked files themselves (the first one as
-        the command and the rest as its arguments), which is handy for running
-        an executable that has just been picked; use ctrl-c to cancel instead.
-        Combine with --confirm to see the resulting command line, including the
-        files, before it runs.
+        have been run otherwise (-c/--cmd, -e/--edit or the preferred editor).
+        The picked files are always appended at the end of whatever is typed, so
+        a trailing comment or separator makes them be dropped or run as a
+        command instead. Clearing the prompt runs the picked files themselves
+        (the first one as the command and the rest as its arguments), which is
+        handy for running an executable that has just been picked; ctrl-c and
+        ctrl-d cancel instead, as does answering no under --confirm. Combine
+        with --confirm to see the resulting command line, including the files,
+        before it runs.
     dir: The directory (default to .) under which to search for files."
 end
 
@@ -88,10 +91,14 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
     end
 
     # Shared fzf options for both the exit-mode and the editor pipelines.
+    # Each entry is a whole path, so the previewer takes {} (the entire entry)
+    # rather than the field index {1} that fzf_ripgrep uses. fzf single-quotes
+    # either one, so no quoting is needed here, but {1} splits on whitespace
+    # without a --delimiter and would truncate any name containing a space.
     set -l fzf_opts --read0 --ansi \
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
-        --preview '_fzf_fdfind_previewer {1}' \
-        --preview-window '~4,+{2}+4/3,<80(up)'
+        --preview '_fzf_fdfind_previewer {}' \
+        --preview-window '~4,<80(up)'
     if not set -q _flag_no_multi
         set -a fzf_opts --multi
     end
@@ -127,11 +134,21 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
         # be trusted input.
         set -l cmd_line (string join ' ' -- $cmd (string escape -- $files))
         if test $confirm = 1
+            # Enter defaults to no, except under -p/--prompt, where the command
+            # was typed out a keystroke ago and answering no again is more
+            # friction than protection. Destructive presets such as `frip -c rip
+            # --confirm` keep the safer default.
+            set -l accept '^y(es)?$'
+            set -l label "Proceed? [y/N] "
+            if test $prompt = 1
+                set accept '^(y(es)?)?$'
+                set label "Proceed? [Y/n] "
+            end
             echo "The following command will be run:"
             echo "  $cmd_line"
-            read -l -P "Proceed? [y/N] " reply
+            read -l -P "$label" reply
             or return
-            string match -qri '^y(es)?$' -- $reply
+            string match -qri $accept -- $reply
             or return
         end
         history append -- $cmd_line
