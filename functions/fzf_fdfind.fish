@@ -1,7 +1,7 @@
 function _fzf_fdfind_usage
     echo "Leverage fzf as the UI to search for files by name using fdfind,
 preview it using bat, and then run external commands on open selections.
-Syntax: fzf_fdfind [-h/--help] [-c/--cmd command] [-e/--edit] [-t/--type filetype] [--no-multi] [-x/--exit] [--confirm] [dir]
+Syntax: fzf_fdfind [-h/--help] [-c/--cmd command] [-e/--edit] [-t/--type filetype] [--no-multi] [-x/--exit] [--confirm] [-p/--prompt] [dir]
 Args:
     -h/--help: Show the help doc.
     -c/--cmd command: Run command (default nvim) on the file.
@@ -14,15 +14,30 @@ Args:
         for commands (e.g. cs) that must act on the calling shell.
     --confirm: Imply -x/--exit and, on top of it, log the command and ask for
         confirmation before running it (useful for destructive commands such as rip).
+    -p/--prompt: Imply -x/--exit and ask for the command to run after the files
+        have been picked. The prompt is prefilled with the command that would
+        have been run otherwise (-c/--cmd or the preferred editor). The picked
+        files are always appended at the end of whatever is typed, so a trailing
+        comment or separator makes them be dropped or run as a command instead.
+        Clearing the prompt runs the picked files themselves (the first one as
+        the command and the rest as its arguments), which is handy for running
+        an executable that has just been picked; use ctrl-c to cancel instead.
+        Combine with --confirm to see the resulting command line, including the
+        files, before it runs.
     dir: The directory (default to .) under which to search for files."
 end
 
 function fzf_fdfind --description 'Search files by name with fzf and open selections'
-    argparse h/help e/edit x/exit confirm no-multi c/cmd= t/type= -- $argv
+    argparse h/help e/edit x/exit confirm p/prompt no-multi c/cmd= t/type= -- $argv
     or return 1
     if set -q _flag_help
         _fzf_fdfind_usage
         return 0
+    end
+
+    set -l prompt 0
+    if set -q _flag_prompt
+        set prompt 1
     end
 
     set -l cmd (preferred_editor)
@@ -33,7 +48,9 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
         set cmd (preferred_editor -g)
     end
 
-    if test -z "$cmd"
+    # With -p/--prompt an empty default is fine: it only means the prompt starts
+    # out empty and the command is typed in after the files have been picked.
+    if test $prompt = 0; and test -z "$cmd"
         echo (set_color $fish_color_error)"Error: no command/editor found. Please specify one with -c/--cmd."(set_color normal) >&2
         return 1
     end
@@ -49,6 +66,14 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
     # --confirm builds on -x/--exit: it runs in the current shell too, adding a
     # log and a prompt on top.
     if test $confirm = 1
+        set exit_after 1
+    end
+    # -p/--prompt runs in the current shell too, so that a typed command like
+    # `cd` still affects the caller. It composes with --confirm: typing the
+    # command out does not show which files it will run on, since fzf has left
+    # the alternate screen by then, so the log and the y/N prompt still add
+    # something on top.
+    if test $prompt = 1
         set exit_after 1
     end
 
@@ -79,13 +104,27 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
             fzf --print0 $fzf_opts | string split0)
         set -q files[1]
         or return
+        # -p/--prompt asks for the command only after the files are known, with
+        # the default one prefilled so it can be edited or replaced. Clearing
+        # the prompt runs the picked files as they are, which is what you want
+        # after picking an executable. `set cmd` (empty list, not empty string)
+        # keeps it from joining as a leading space below. ctrl-c/ctrl-d cancels.
+        if test $prompt = 1
+            read -l -P "Command: " -c "$cmd" reply
+            or return
+            set cmd (string trim -- $reply)
+            if test -z "$cmd"
+                set cmd
+            end
+        end
         # Build one escaped command line and reuse it for the log, the history
         # entry, and execution. Escaping the file names keeps it accurate and
         # safe to re-run when names contain spaces or special characters, while
         # `eval` lets fish's own tokenizer handle a multi-word command (e.g.
         # `rip -f`), including quoted arguments and repeated spaces.
-        # Only the file names are escaped; $cmd (the -c value) is intentionally
-        # left unescaped so it tokenizes, so -c must only ever be trusted input.
+        # Only the file names are escaped; $cmd (the -c value or the -p answer)
+        # is intentionally left unescaped so it tokenizes, so it must only ever
+        # be trusted input.
         set -l cmd_line (string join ' ' -- $cmd (string escape -- $files))
         if test $confirm = 1
             echo "The following command will be run:"
