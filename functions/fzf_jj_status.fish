@@ -10,9 +10,8 @@ Args:
     -c/--cmd command: Run command (default \`jj diff\`) on the picked files
         instead. The revision is not passed to a custom command, since commands
         such as \`jj restore\` take --from/--to rather than --revision.
-        The picked files are passed as \`root-file:\"...\"\` filesets if the
-        command starts with jj (or \`command jj\`), and as absolute paths
-        otherwise.
+        The picked files are passed as \`file:\"...\"\` filesets if the command
+        starts with jj (or \`command jj\`), and as ./-prefixed paths otherwise.
     --confirm: Log the command and ask for confirmation before running it
         (useful for destructive commands such as \`jj restore\`). Only y/yes
         (case insensitive) proceeds, so a bare enter cancels; under -p/--prompt
@@ -73,11 +72,13 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     end
 
     # A template (rather than --summary or --name-only) gives NUL-separated
-    # entries and a status word that can be filtered on. Note that its `path` is
-    # relative to the workspace root while --name-only would be relative to the
-    # current directory.
+    # entries and a status word that can be filtered on. `path` on its own is a
+    # RepoPath, i.e. jj's internal form, which is relative to the workspace root;
+    # `path.display()` is the conversion the jj CLI applies to its own output and
+    # is relative to the current directory, so the entries match what `jj status`
+    # prints and stay usable as they are.
     set -l entries (command jj diff --revision $rev \
-        --template 'status ++ "\t" ++ path ++ "\0"' | string split0)
+        --template 'path.display() ++ "\t[" ++ status ++ "]\0"' | string split0)
     # $status is the one of `string split0`, so jj's own failures (e.g. an
     # invalid revset, or not being in a repository) have to be checked for
     # separately instead of being reported as an empty revision.
@@ -93,17 +94,18 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     # command eval'd below inherits this function's environment, and a bare
     # `fish` breaks anything that resolves $SHELL elsewhere (e.g. over ssh,
     # where fish may not be on PATH).
-    # The entries are tab delimited, so the previewer takes the field {2} rather
-    # than the whole entry. Matching is left on the whole entry on purpose, so
-    # that typing e.g. `removed` filters by status.
+    # The entries are `path<tab>status`, so both the previewer and --accept-nth
+    # take everything but the last field: a file name may itself contain a tab,
+    # while the status word never does. Matching is left on the whole entry on
+    # purpose, so that typing e.g. `removed` filters by status.
     # --accept-nth drops the status column in fzf rather than in fish afterwards:
     # a command substitution splits on newlines unless it is fed NUL-separated
     # entries by `string split0`, so any post-processing here would break file
     # names containing a newline.
     set -l files (printf '%s\0' $entries | SHELL=fish fzf --read0 --print0 --ansi --multi \
-        --delimiter \t --accept-nth '2..' \
+        --delimiter \t --accept-nth '..-2' \
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
-        --preview "_fzf_jj_status_previewer "(string escape -- $rev)" {2}" \
+        --preview "_fzf_jj_status_previewer "(string escape -- $rev)" {..-2}" \
         --preview-window '~4,<80(up)' | string split0)
     set -q files[1]
     or return
@@ -122,19 +124,18 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
         end
     end
 
-    # jj parses positional arguments as filesets, other commands expect paths.
-    # The paths are relative to the workspace root, so they have to be made
-    # absolute to keep working from a subdirectory. The command is only known
-    # here under -p/--prompt, which is why the choice is made this late.
-    # $cmd can be empty at this point, and `string match` would then read from
-    # stdin instead of matching nothing.
-    set -l targets
+    # jj parses positional arguments as filesets, other commands take the paths
+    # as they are. The command is only known here under -p/--prompt, which is why
+    # the choice is made this late. $cmd can be empty at this point, and `string
+    # match` would then read from stdin instead of matching nothing.
+    # The ./ prefix keeps a name starting with a dash from being parsed as an
+    # option by the command, and makes a picked file runnable as the command
+    # itself once the -p/--prompt has been cleared, since a bare relative path is
+    # looked up in $PATH rather than in the current directory. fd prints its
+    # paths ./-prefixed already, which is why fzf_fdfind needs no equivalent.
+    set -l targets ./$files
     if test -n "$cmd"; and string match --quiet --regex '^\s*(command\s+)?jj(\s|$)' -- $cmd
-        set targets (_jj_root_fileset $files | string split0)
-    else
-        set -l root (command jj root)
-        or return 1
-        set targets $root/$files
+        set targets (_jj_cwd_fileset $files | string split0)
     end
 
     # Build one escaped command line and reuse it for the history entry and
