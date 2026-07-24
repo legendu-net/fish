@@ -245,6 +245,7 @@ if status is-interactive
     abbr --add ffd fzf_fdfind
     abbr --add ffdp fzf_fdfind -p --confirm
     abbr --add frip fzf_fdfind -c rip --confirm
+    abbr --add fjjs fzf_jj_status -p --confirm
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
