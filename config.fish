@@ -104,8 +104,8 @@ if status is-interactive
     abbr --add gco git checkout
     abbr --add gitclone git clone
     abbr --add gcl git clone
-    abbr --add gitcommit 'git commit'
-    abbr --add gc 'git commit'
+    abbr --add gitcommit 'git commit --edit'
+    abbr --add gc 'git commit --edit'
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
