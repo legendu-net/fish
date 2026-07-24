@@ -107,8 +107,13 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
         # fcd-style: fzf prints the selection and exits on enter, then we run
         # the command in the current shell (no child process) so effects like
         # `cd` persist. --confirm additionally logs the command and prompts.
+        # SHELL=fish is scoped to the fzf process so that its bindings (here the
+        # --preview one) can run fish functions. It must NOT leak any further:
+        # the command eval'd below inherits this function's environment, and a
+        # bare `fish` breaks anything that resolves $SHELL elsewhere (e.g. over
+        # ssh, where fish may not be on PATH).
         set -l files ($fd --no-ignore --hidden --print0 "" $search_path | \
-            fzf --print0 $fzf_opts | string split0)
+            SHELL=fish fzf --print0 $fzf_opts | string split0)
         set -q files[1]
         or return
         # -p/--prompt asks for the command only after the files are known, with
@@ -158,7 +163,7 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
 
     # Editor mode stays in fzf via `execute`, opening selections with the
     # opener so the picker remains open for further selections.
-    $fd --no-ignore --hidden --print0 "" $search_path | fzf $fzf_opts \
+    $fd --no-ignore --hidden --print0 "" $search_path | SHELL=fish fzf $fzf_opts \
         --bind "enter:execute:_fzf_fdfind_opener $cmd {+f}" \
         --bind "ctrl-o:execute:_fzf_fdfind_opener $cmd {+f}"
     history merge

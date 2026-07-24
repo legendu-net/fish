@@ -104,8 +104,8 @@ if status is-interactive
     abbr --add gco git checkout
     abbr --add gitclone git clone
     abbr --add gcl git clone
-    abbr --add gitcommit 'git commit'
-    abbr --add gc 'git commit'
+    abbr --add gitcommit 'git commit --edit'
+    abbr --add gc 'git commit --edit'
     abbr --add gitdiff git diff
     abbr --add gd git diff
     abbr --add gds git diff --staged
@@ -237,11 +237,14 @@ if status is-interactive
     abbr --add rsync.progress rsync -avh --info=progress2
     abbr --add rsync.progress.pc proxychains rsync -avh --info=progress2
     # -----------------------------------------------------
-    abbr --add fcs SHELL=fish fzf_fdfind -t d -c cs -x --no-multi
-    abbr --add fcd SHELL=fish fzf_fdfind -t d -c cs -x --no-multi
-    abbr --add ffd SHELL=fish fzf_fdfind
-    abbr --add ffdp SHELL=fish fzf_fdfind -p --confirm
-    abbr --add frip SHELL=fish fzf_fdfind -c rip --confirm
+    # fzf_fdfind sets SHELL=fish on the fzf process itself, so these must not
+    # prefix it here: -x/--exit, --confirm and -p/--prompt run the picked
+    # command in the current shell, which would inherit a bare `fish` as $SHELL.
+    abbr --add fcs fzf_fdfind -t d -c cs -x --no-multi
+    abbr --add fcd fzf_fdfind -t d -c cs -x --no-multi
+    abbr --add ffd fzf_fdfind
+    abbr --add ffdp fzf_fdfind -p --confirm
+    abbr --add frip fzf_fdfind -c rip --confirm
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
     abbr --add fh fzf_history
