@@ -140,6 +140,7 @@ function _jj_sync_base_recover_divergence --argument-names bookmark
 
     echo (set_color yellow)"Warning: @- is a divergent local copy of a change already merged into "(set_color -o -i -u cyan)"$bookmark"(set_color normal)(set_color yellow)". Recovering onto a fresh change id..."(set_color normal)
 
+    echo (set_color brblack)"→ Creating a fresh change on "(set_color -o -i -u cyan)"$bookmark"(set_color normal)(set_color brblack)"..."(set_color normal)
     jj new $bookmark
     or return 2
 
@@ -147,6 +148,7 @@ function _jj_sync_base_recover_divergence --argument-names bookmark
         # Reconstruct the extra local work on top of $bookmark. Root-anchored
         # filesets keep this correct regardless of the caller's cwd.
         set -l filesets (_jj_root_fileset $local_paths | string split0)
+        echo (set_color brblack)"→ Restoring "(count $local_paths)" locally-changed file(s) from the divergent copy..."(set_color normal)
         jj restore --from $local_commit -- $filesets
         or return 2
         # Preserve the original description. Passed directly (not via eval), so no
@@ -155,6 +157,7 @@ function _jj_sync_base_recover_divergence --argument-names bookmark
         # `jj describe -m` error on a missing value, so only set it when non-empty.
         set -l desc (jj log -r $local_commit --no-graph -T 'description' | string collect)
         if test -n "$desc"
+            echo (set_color brblack)"→ Restoring the original commit description..."(set_color normal)
             jj describe -r @ -m $desc
             or return 2
         end
@@ -170,6 +173,7 @@ function _jj_sync_base_recover_divergence --argument-names bookmark
         jj bookmark delete $bookmark_name
     end
 
+    echo (set_color brblack)"→ Abandoning the divergent local copy..."(set_color normal)
     jj abandon $local_commit $orig_wc
     or return 2
 
