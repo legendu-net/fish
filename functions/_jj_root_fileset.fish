@@ -1,10 +1,13 @@
-# Helper function for fzf_jj_status.
-# Converts workspace-root-relative paths (as produced by the `path` keyword of a
-# jj diff template) into exact fileset patterns.
-# A bare path passed to a jj command is parsed as a `prefix-glob:` pattern, so a
-# name containing glob or fileset meta characters (e.g. `[id].tsx`) would match
-# something else than itself. `root-file:"..."` matches the literal path.
-function _jj_root_fileset --description 'Convert workspace-relative paths into exact jj fileset patterns'
+# Helper function for jj_sync_base divergence recovery.
+# Converts repo-root-relative paths (as produced by a `jj diff` `path.display()`
+# template that was run from the repository root) into exact root-anchored
+# fileset patterns, so a `jj restore` using them behaves identically regardless
+# of the caller's current directory.
+# A bare path passed to a jj command is parsed as a cwd-relative `prefix-glob:`
+# pattern, so a name containing glob or fileset meta characters (e.g. `[id].tsx`)
+# would match something other than itself. `root-file:"..."` matches the literal
+# path from the repository root.
+function _jj_root_fileset --description 'Convert root-relative paths into exact root-anchored jj fileset patterns'
     for path in $argv
         # jj string literals escape with backslashes, so a backslash has to be
         # doubled before the quotes are escaped. `string collect` keeps the
