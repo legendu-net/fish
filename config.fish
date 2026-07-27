@@ -257,6 +257,13 @@ if status is-interactive
     abbr --add zbox 'begin; set -l c (tbx version); and zellij action new-pane -- cmd toolbox enter $c; end'
     abbr --add zw zellij web
     abbr --add zwct zellij web --create-token
+    # The zellij web client (xterm.js) implements no image protocol, but the zellij
+    # server still advertises sixel in its DA1 reply, so yazi emits sixel that the
+    # browser silently drops - a blank preview. Apple_Terminal is a brand yazi knows
+    # has no graphics support, so it skips the capability probe and falls back to
+    # chafa. Note this leaks to children of yazi (e.g. $EDITOR), which may downgrade
+    # truecolor.
+    abbr --add yazi.web TERM_PROGRAM=Apple_Terminal yazi
     # -----------------------------------------------------
     abbr --add mount.hh sudo mount -t virtiofs host_home $HOME/host_home/
     # -----------------------------------------------------
