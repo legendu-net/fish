@@ -106,7 +106,7 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
         --delimiter \t --accept-nth '..-2' \
         --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
         --preview "_fzf_jj_status_previewer "(string escape -- $rev)" {..-2}" \
-        --preview-window '~4,<80(up)' | string split0)
+        --preview-window '~4,80%,<80(up)' | string split0)
     set -q files[1]
     or return
 
