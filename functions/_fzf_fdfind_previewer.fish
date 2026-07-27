@@ -57,23 +57,26 @@ function _fzf_fdfind_video_frames
     # and the tile filter fills what it has no frames for with black.
     set -l info (ffprobe -v quiet -select_streams v:0 \
         -show_entries stream=duration,avg_frame_rate -of default=nw=1 -- "$argv[1]")
-    set -l duration (string replace -f duration= '' -- $info)
+    set -l duration (string replace -fr '^duration=' '' -- $info)
     # Matroska and friends record it on the container instead.
-    if not string match -qr '^[0-9]+(\.[0-9]+)?$' -- "$duration"
+    if not string match -qr '^[0-9]{1,7}(\.[0-9]+)?$' -- "$duration"
         set duration (ffprobe -v quiet -show_entries format=duration -of csv=p=0 -- "$argv[1]")
     end
     # A video shorter than the window is sampled across the whole of it. One
     # that reports no length at all is left to run into the window and give
-    # whatever it has.
+    # whatever it has. The digits are counted because these numbers come out of
+    # the file: `test` and `math` both write to stderr, and so into the pane,
+    # when handed something too large to hold, and a length of more than a few
+    # months of seconds is a broken file rather than a long one.
     set -l span $max_span
-    if string match -qr '^[0-9]+(\.[0-9]+)?$' -- "$duration"; and test "$duration" -gt 0
+    if string match -qr '^[0-9]{1,7}(\.[0-9]+)?$' -- "$duration"; and test "$duration" -gt 0
         set span (math "min($duration, $max_span)")
     end
     # Sampling more often than the video has frames would only repeat pictures,
     # so a clip holding fewer than the maximum is shown frame for frame. The
     # rate is reported as a rational, 30/1 and so on, or 0/0 when unknown.
     set -l count $max_frames
-    set -l rate (string replace -f avg_frame_rate= '' -- $info)
+    set -l rate (string replace -fr '^avg_frame_rate=' '' -- $info)
     if string match -qr '^[0-9]+/[0-9]*[1-9][0-9]*$' -- "$rate"
         set -l parts (string split / -- $rate)
         set count (math --scale 0 "min($max_frames, max(1, floor($span * $parts[1] / $parts[2])))")
@@ -145,10 +148,115 @@ function _fzf_fdfind_video_frames
     end
 end
 
+# Helper function for _fzf_fdfind_previewer.
+# Writes a number of seconds as h:mm:ss, or as m:ss under the hour.
+function _fzf_fdfind_duration
+    set -l total (math --scale 0 "floor($argv[1])")
+    set -l hours (math --scale 0 "floor($total / 3600)")
+    set -l minutes (math --scale 0 "floor($total % 3600 / 60)")
+    set -l seconds (math --scale 0 "$total % 60")
+    if test $hours -gt 0
+        printf '%d:%02d:%02d\n' $hours $minutes $seconds
+        return
+    end
+    printf '%d:%02d\n' $minutes $seconds
+end
+
+# Helper function for _fzf_fdfind_previewer.
+# Writes what identifies an audio file: the tags it carries, then its format.
+# Returns non-zero if it found nothing at all to say.
+function _fzf_fdfind_audio_info
+    set -l info (ffprobe -v quiet -select_streams a:0 -of default=nw=1 -show_entries \
+        'format=duration,bit_rate:format_tags=title,artist,album,date:stream=codec_name,sample_rate,channels' \
+        -- "$argv[1]")
+    # Anchored, because the keys are only keys at the start of a line: a tag
+    # whose value happens to read `TAG:album=...` would otherwise have that
+    # taken for an album and shown as one.
+    set -l title (string replace -fr '^TAG:title=' '' -- $info)
+    set -l artist (string replace -fr '^TAG:artist=' '' -- $info)
+    set -l album (string replace -fr '^TAG:album=' '' -- $info)
+    set -l date (string replace -fr '^TAG:date=' '' -- $info)
+    set -l said 1
+    # Whichever of the two are there, in the order a listing would show them.
+    set -l heading (string join ' — ' -- $artist $title)
+    if test -n "$heading"
+        echo $heading
+        set said 0
+    end
+    if test -n "$album"
+        test -n "$date"; and set album "$album ($date)"
+        echo $album
+        set said 0
+    end
+    # The format line reads as prose rather than as a table: it is one line of
+    # facts about a file, not something anybody scans down a column of.
+    set -l facts (string replace -fr '^codec_name=' '' -- $info)
+    # The digits are counted on every number below: they come out of the file,
+    # and `math` writes to stderr, and so into the pane, when handed one too
+    # large to hold.
+    set -l bitrate (string replace -fr '^bit_rate=' '' -- $info)
+    if string match -qr '^[0-9]{1,9}$' -- "$bitrate"
+        set -a facts (math --scale 0 "$bitrate / 1000")" kb/s"
+    end
+    set -l rate (string replace -fr '^sample_rate=' '' -- $info)
+    if string match -qr '^[0-9]{1,9}$' -- "$rate"
+        set -a facts (math "$rate / 1000")" kHz"
+    end
+    set -l channels (string replace -fr '^channels=' '' -- $info)
+    switch "$channels"
+        case 1
+            set -a facts mono
+        case 2
+            set -a facts stereo
+        case ''
+        case '*'
+            set -a facts "$channels channels"
+    end
+    set -l duration (string replace -fr '^duration=' '' -- $info)
+    if string match -qr '^[0-9]{1,7}(\.[0-9]+)?$' -- "$duration"
+        set -a facts (_fzf_fdfind_duration $duration)
+    end
+    if set -q facts[1]
+        string join ', ' -- $facts
+        set said 0
+    end
+    return $said
+end
+
+# Helper function for _fzf_fdfind_previewer.
+# Previews an audio file: what identifies it, then a picture of it.
+# Returns non-zero if neither had anything to show.
+function _fzf_fdfind_audio
+    # Only the opening is drawn. showwavespic decodes every second it is handed,
+    # which on an hour-long file holds the pane up for a couple of them.
+    set -l max_span 120
+    set -l said 1
+    _fzf_fdfind_audio_info "$argv[1]"
+    and set said 0
+    # Cover art travels as a video stream, so it is copied out rather than
+    # decoded, and it identifies an album far quicker than any waveform. Asking
+    # first is cheaper than letting the extraction fail, and it keeps chafa from
+    # writing its cursor sequences into the pane ahead of the waveform below.
+    set -l art (ffprobe -v quiet -select_streams v:0 -show_entries stream=codec_name \
+        -of csv=p=0 -- "$argv[1]")
+    if test -n "$art"
+        ffmpeg -v quiet -i "$argv[1]" -an -c:v copy -f image2 - 2>/dev/null \
+            | chafa (_fzf_fdfind_chafa_size 1) - 2>/dev/null
+        and return 0
+    end
+    # Nothing to look at, so draw the shape of the sound instead: for a voice
+    # memo or a stem, where the silence and the loud parts fall is the thing
+    # that tells one file from another.
+    ffmpeg -v quiet -t $max_span -i "$argv[1]" -filter_complex showwavespic=s=640x200 \
+        -frames:v 1 -f image2 -c:v png - | chafa (_fzf_fdfind_chafa_size 1) - 2>/dev/null
+    or return $said
+end
+
 # Helper function for fzf_fdind.
 # Definers a previewer for files.
 #     - preview an image using chafa.
 #     - preview a video using chafa on a few frames sampled across it.
+#     - preview an audio file using its tags plus its cover art or a waveform.
 #     - preview a PDF file using the text extracted by pdftotext.
 #     - preview any other binary file using a description of it and a hex dump.
 #     - preview a text file using bat.
@@ -180,6 +288,15 @@ function _fzf_fdfind_previewer --description 'Helper function for fzf_fdfind to 
             # A few frames tell videos apart far better than any metadata line
             # would. Files whose video stream will not decode fall back.
             _fzf_fdfind_video_frames "$argv[1]"
+            # Containers are named for what they can hold rather than for what
+            # they do hold, so an audio-only mkv or mp4 arrives here with no
+            # frames to give. It is still worth describing as the audio it is.
+            or _fzf_fdfind_audio "$argv[1]"
+            or _fzf_fdfind_hexdump "$argv[1]"
+        case 'audio/*'
+            # The tags come first: for audio they are what identifies the file,
+            # and the picture is the garnish.
+            _fzf_fdfind_audio "$argv[1]"
             or _fzf_fdfind_hexdump "$argv[1]"
         case 'application/pdf;*'
             # The version and the page count, which is all there is to show for
