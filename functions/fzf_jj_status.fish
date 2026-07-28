@@ -115,18 +115,32 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     # fd prints its paths ./-prefixed already, which is why fzf_fdfind needs no
     # equivalent.
     set -l targets ./$files
+    set -l quoted (string escape -- $targets)
     if test -n "$cmd"; and string match --quiet --regex '^\s*(command\s+)?jj(\s|$)' -- $cmd
         set targets (_jj_cwd_fileset $files | string split0)
+        # `string escape` backslash-escapes the double quotes of a `file:"..."`
+        # fileset, which is accurate but noisy to read and edit in the -p/--prompt
+        # buffer. Single quotes wrap the whole fileset in one go and keep it
+        # legible. A target containing a single quote or a backslash has no
+        # single-quoted form, so it falls back to `string escape`.
+        set quoted
+        for target in $targets
+            if string match --quiet --regex "['\\\\]" -- $target
+                set -a quoted (string escape -- $target)
+            else
+                set -a quoted "'$target'"
+            end
+        end
     end
 
-    # Build one escaped command line and reuse it for the editor buffer, the
-    # history entry, and execution. Escaping the targets keeps it accurate and
+    # Build one quoted command line and reuse it for the editor buffer, the
+    # history entry, and execution. Quoting the targets keeps it accurate and
     # safe to re-run when names contain spaces or special characters, while
     # `eval` lets fish's own tokenizer handle a multi-word command (e.g. `jj
     # restore`), including quoted arguments and repeated spaces.
-    # Only the targets are escaped; $cmd (the -c value) is intentionally left
-    # unescaped so it tokenizes, so it must only ever be trusted input.
-    set -l cmd_line (string join ' ' -- $cmd (string escape -- $targets))
+    # Only the targets are quoted; $cmd (the -c value) is intentionally left
+    # unquoted so it tokenizes, so it must only ever be trusted input.
+    set -l cmd_line (string join ' ' -- $cmd $quoted)
     # -p/--prompt hands that whole line over to an editor, so the files are
     # editable along with the command and the result is run as it stands.
     if test $prompt = 1
