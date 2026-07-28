@@ -238,14 +238,13 @@ if status is-interactive
     abbr --add rsync.progress.pc proxychains rsync -avh --info=progress2
     # -----------------------------------------------------
     # fzf_fdfind sets SHELL=fish on the fzf process itself, so these must not
-    # prefix it here: -x/--exit, --confirm and -p/--prompt run the picked
-    # command in the current shell, which would inherit a bare `fish` as $SHELL.
+    # prefix it here: -x/--exit and -p/--prompt run the picked command in the
+    # current shell, which would inherit a bare `fish` as $SHELL.
     abbr --add fcs fzf_fdfind -t d -c cs -x --no-multi
     abbr --add fcd fzf_fdfind -t d -c cs -x --no-multi
     abbr --add ffd fzf_fdfind
-    abbr --add ffdp fzf_fdfind -p --confirm
-    abbr --add frip fzf_fdfind -c rip --confirm
-    abbr --add fjjs fzf_jj_status -p --confirm
+    abbr --add ffdp fzf_fdfind -p
+    abbr --add fjjs fzf_jj_status -p
     abbr --add frg SHELL=fish fzf_ripgrep
     abbr --add fhist fzf_history
     abbr --add fh fzf_history

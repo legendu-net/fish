@@ -1,7 +1,7 @@
 function _fzf_fdfind_usage
     echo "Leverage fzf as the UI to search for files by name using fdfind,
 preview it using bat, and then run external commands on open selections.
-Syntax: fzf_fdfind [-h/--help] [-c/--cmd command] [-e/--edit] [-t/--type filetype] [--no-multi] [-x/--exit] [--confirm] [-p/--prompt] [dir]
+Syntax: fzf_fdfind [-h/--help] [-c/--cmd command] [-e/--edit] [-t/--type filetype] [--no-multi] [-x/--exit] [-p/--prompt] [dir]
 Args:
     -h/--help: Show the help doc.
     -c/--cmd command: Run command (default nvim) on the file.
@@ -12,26 +12,20 @@ Args:
     -x/--exit: Exit fzf on enter and run the command in the current shell
         instead of a child process, so effects like `cd` persist. Use this
         for commands (e.g. cs) that must act on the calling shell.
-    --confirm: Imply -x/--exit and, on top of it, log the command and ask for
-        confirmation before running it (useful for destructive commands such as
-        rip). Only y/yes (case insensitive) proceeds, so a bare enter cancels;
-        under -p/--prompt the default flips and a bare enter proceeds.
-    -p/--prompt: Imply -x/--exit and ask for the command to run after the files
-        have been picked. The prompt is prefilled with the command that would
-        have been run otherwise (-c/--cmd, -e/--edit or the preferred editor).
-        The picked files are always appended at the end of whatever is typed, so
-        a trailing comment or separator makes them be dropped or run as a
-        command instead. Clearing the prompt runs the picked files themselves
-        (the first one as the command and the rest as its arguments), which is
-        handy for running an executable that has just been picked; ctrl-c and
-        ctrl-d cancel instead, as does answering no under --confirm. Combine
-        with --confirm to see the resulting command line, including the files,
-        before it runs.
+    -p/--prompt: Imply -x/--exit and, once the files have been picked, open the
+        resulting command line in an editor instead of running it right away.
+        The buffer is prefilled with the command that would have been run
+        otherwise (-c/--cmd, -e/--edit or the preferred editor) followed by the
+        picked files, and everything in it is editable: the command, the file
+        list, or the whole thing replaced by a multi-line fish script. Saving
+        and quitting runs the buffer as it is, so nothing is appended to it
+        afterwards; leaving nothing but comments in it cancels, which also makes
+        the buffer the place to review a destructive command before it runs.
     dir: The directory (default to .) under which to search for files."
 end
 
 function fzf_fdfind --description 'Search files by name with fzf and open selections'
-    argparse h/help e/edit x/exit confirm p/prompt no-multi c/cmd= t/type= -- $argv
+    argparse h/help e/edit x/exit p/prompt no-multi c/cmd= t/type= -- $argv
     or return 1
     if set -q _flag_help
         _fzf_fdfind_usage
@@ -51,31 +45,20 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
         set cmd (preferred_editor -g)
     end
 
-    # With -p/--prompt an empty default is fine: it only means the prompt starts
-    # out empty and the command is typed in after the files have been picked.
+    # With -p/--prompt an empty default is fine: it only means the buffer is
+    # prefilled with the picked files alone and the command is typed in front of
+    # them, which is also how an executable that has just been picked gets run.
     if test $prompt = 0; and test -z "$cmd"
         echo (set_color $fish_color_error)"Error: no command/editor found. Please specify one with -c/--cmd."(set_color normal) >&2
         return 1
     end
 
-    set -l confirm 0
     set -l exit_after 0
-    if set -q _flag_confirm
-        set confirm 1
-    end
     if set -q _flag_exit
         set exit_after 1
     end
-    # --confirm builds on -x/--exit: it runs in the current shell too, adding a
-    # log and a prompt on top.
-    if test $confirm = 1
-        set exit_after 1
-    end
-    # -p/--prompt runs in the current shell too, so that a typed command like
-    # `cd` still affects the caller. It composes with --confirm: typing the
-    # command out does not show which files it will run on, since fzf has left
-    # the alternate screen by then, so the log and the y/N prompt still add
-    # something on top.
+    # -p/--prompt runs in the current shell too, so that an edited-in command like
+    # `cd` still affects the caller.
     if test $prompt = 1
         set exit_after 1
     end
@@ -106,7 +89,8 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
     if test $exit_after = 1
         # fcd-style: fzf prints the selection and exits on enter, then we run
         # the command in the current shell (no child process) so effects like
-        # `cd` persist. --confirm additionally logs the command and prompts.
+        # `cd` persist. -p/--prompt additionally opens the command line in an
+        # editor first.
         # SHELL=fish is scoped to the fzf process so that its bindings (here the
         # --preview one) can run fish functions. It must NOT leak any further:
         # the command eval'd below inherits this function's environment, and a
@@ -116,45 +100,19 @@ function fzf_fdfind --description 'Search files by name with fzf and open select
             SHELL=fish fzf --print0 $fzf_opts | string split0)
         set -q files[1]
         or return
-        # -p/--prompt asks for the command only after the files are known, with
-        # the default one prefilled so it can be edited or replaced. Clearing
-        # the prompt runs the picked files as they are, which is what you want
-        # after picking an executable. `set cmd` (empty list, not empty string)
-        # keeps it from joining as a leading space below. ctrl-c/ctrl-d cancels.
-        if test $prompt = 1
-            read -l -P "Command: " -c "$cmd" reply
-            or return
-            set cmd (string trim -- $reply)
-            if test -z "$cmd"
-                set cmd
-            end
-        end
-        # Build one escaped command line and reuse it for the log, the history
-        # entry, and execution. Escaping the file names keeps it accurate and
-        # safe to re-run when names contain spaces or special characters, while
-        # `eval` lets fish's own tokenizer handle a multi-word command (e.g.
-        # `rip -f`), including quoted arguments and repeated spaces.
-        # Only the file names are escaped; $cmd (the -c value or the -p answer)
-        # is intentionally left unescaped so it tokenizes, so it must only ever
-        # be trusted input.
+        # Build one escaped command line and reuse it for the editor buffer, the
+        # history entry, and execution. Escaping the file names keeps it accurate
+        # and safe to re-run when names contain spaces or special characters,
+        # while `eval` lets fish's own tokenizer handle a multi-word command
+        # (e.g. `rip -f`), including quoted arguments and repeated spaces.
+        # Only the file names are escaped; $cmd (the -c value) is intentionally
+        # left unescaped so it tokenizes, so it must only ever be trusted input.
         set -l cmd_line (string join ' ' -- $cmd (string escape -- $files))
-        if test $confirm = 1
-            # Enter defaults to no, except under -p/--prompt, where the command
-            # was typed out a keystroke ago and answering no again is more
-            # friction than protection. Destructive presets such as `frip -c rip
-            # --confirm` keep the safer default.
-            set -l accept '^y(es)?$'
-            set -l label "Proceed? [y/N] "
-            if test $prompt = 1
-                set accept '^(y(es)?)?$'
-                set label "Proceed? [Y/n] "
-            end
-            echo "The following command will be run:"
-            echo "  $cmd_line"
-            read -l -P "$label" reply
-            or return
-            string match -qri $accept -- $reply
-            or return
+        # -p/--prompt hands that whole line over to an editor, so the files are
+        # editable along with the command and the result is run as it stands.
+        if test $prompt = 1
+            _edit_and_run $cmd_line
+            return
         end
         history append -- $cmd_line
         eval $cmd_line

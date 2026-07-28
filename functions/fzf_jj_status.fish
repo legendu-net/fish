@@ -2,7 +2,7 @@ function _fzf_jj_status_usage
     echo "Leverage fzf as the UI to pick files changed in a jj revision,
 preview their diff, and then run a command (jj diff by default) on the selection.
 Syntax: fzf_jj_status [-h/--help] [-r/--revision revision] [-c/--cmd command]
-    [--confirm] [-p/--prompt]
+    [-p/--prompt]
 Args:
     -h/--help: Show the help doc.
     -r/--revision revision: The revision (default @, i.e. the working copy) whose
@@ -12,27 +12,23 @@ Args:
         such as \`jj restore\` take --from/--to rather than --revision.
         The picked files are passed as \`file:\"...\"\` filesets if the command
         starts with jj (or \`command jj\`), and as ./-prefixed paths otherwise.
-    --confirm: Log the command and ask for confirmation before running it
-        (useful for destructive commands such as \`jj restore\`). Only y/yes
-        (case insensitive) proceeds, so a bare enter cancels; under -p/--prompt
-        the default flips and a bare enter proceeds.
-    -p/--prompt: Ask for the command to run after the files have been picked.
-        The prompt is prefilled with the command that would have been run
-        otherwise (-c/--cmd or the default \`jj diff\`). The picked files are
-        always appended at the end of whatever is typed, so a trailing comment
-        or separator makes them be dropped or run as a command instead. Whether
-        they are appended as filesets or as paths is decided from the command
-        that has been typed. Clearing the prompt runs the picked files
-        themselves (the first one as the command and the rest as its arguments);
-        ctrl-c and ctrl-d cancel instead, as does answering no under --confirm.
-        Combine with --confirm to see the resulting command line, including the
-        files, before it runs.
+    -p/--prompt: Once the files have been picked, open the resulting command line
+        in an editor instead of running it right away. The buffer is prefilled
+        with the command that would have been run otherwise (-c/--cmd or the
+        default \`jj diff\`) followed by the picked files, and everything in it is
+        editable: the command, the file list, or the whole thing replaced by a
+        multi-line fish script. Saving and quitting runs the buffer as it is, so
+        nothing is appended to it afterwards; leaving nothing but comments in it
+        cancels, which also makes the buffer the place to review a destructive
+        command before it runs. Whether the files are prefilled as filesets or as
+        paths follows -c/--cmd, so editing a jj command into a non-jj one means
+        turning the \`file:\"...\"\` filesets into plain paths by hand.
 fzf leaves on enter and the command runs in the current shell, so its output
 lands in the pager and the scrollback just like a hand-typed jj diff."
 end
 
 function fzf_jj_status --description 'Pick files changed in a jj revision with fzf and diff them'
-    argparse --max-args=0 h/help confirm p/prompt r/revision= c/cmd= -- $argv
+    argparse --max-args=0 h/help p/prompt r/revision= c/cmd= -- $argv
     or return 1
     if set -q _flag_help
         _fzf_jj_status_usage
@@ -42,10 +38,6 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     set -l prompt 0
     if set -q _flag_prompt
         set prompt 1
-    end
-    set -l confirm 0
-    if set -q _flag_confirm
-        set confirm 1
     end
 
     set -l rev @
@@ -64,8 +56,9 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     if set -q _flag_cmd
         set cmd $_flag_cmd
     end
-    # With -p/--prompt an empty command is fine: it only means the prompt starts
-    # out empty and the command is typed in after the files have been picked.
+    # With -p/--prompt an empty command is fine: it only means the buffer is
+    # prefilled with the picked files alone and the command is typed in front of
+    # them.
     if test $prompt = 0; and test -z "$cmd"
         echo (set_color $fish_color_error)"Error: the command passed to -c/--cmd is empty."(set_color normal) >&2
         return 1
@@ -110,59 +103,49 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     set -q files[1]
     or return
 
-    # -p/--prompt asks for the command only after the files are known, with the
-    # default one prefilled so it can be edited or replaced. Clearing the prompt
-    # runs the picked files as they are, which is what you want after picking an
-    # executable. `set cmd` (empty list, not empty string) keeps it from joining
-    # as a leading space below. ctrl-c/ctrl-d cancels.
-    if test $prompt = 1
-        read -l -P "Command: " -c "$cmd" reply
-        or return
-        set cmd (string trim -- $reply)
-        if test -z "$cmd"
-            set cmd
-        end
-    end
-
     # jj parses positional arguments as filesets, other commands take the paths
-    # as they are. The command is only known here under -p/--prompt, which is why
-    # the choice is made this late. $cmd can be empty at this point, and `string
-    # match` would then read from stdin instead of matching nothing.
+    # as they are, so the choice follows -c/--cmd. Under -p/--prompt that is only
+    # the prefill: an edit turning a jj command into something else has to turn
+    # the filesets into paths too. $cmd can be empty here, and `string match`
+    # would then read from stdin instead of matching nothing.
     # The ./ prefix keeps a name starting with a dash from being parsed as an
     # option by the command, and makes a picked file runnable as the command
-    # itself once the -p/--prompt has been cleared, since a bare relative path is
-    # looked up in $PATH rather than in the current directory. fd prints its
-    # paths ./-prefixed already, which is why fzf_fdfind needs no equivalent.
+    # itself once -p/--prompt has been used to clear the command, since a bare
+    # relative path is looked up in $PATH rather than in the current directory.
+    # fd prints its paths ./-prefixed already, which is why fzf_fdfind needs no
+    # equivalent.
     set -l targets ./$files
+    set -l quoted (string escape -- $targets)
     if test -n "$cmd"; and string match --quiet --regex '^\s*(command\s+)?jj(\s|$)' -- $cmd
         set targets (_jj_cwd_fileset $files | string split0)
+        # `string escape` backslash-escapes the double quotes of a `file:"..."`
+        # fileset, which is accurate but noisy to read and edit in the -p/--prompt
+        # buffer. Single quotes wrap the whole fileset in one go and keep it
+        # legible. A target containing a single quote or a backslash has no
+        # single-quoted form, so it falls back to `string escape`.
+        set quoted
+        for target in $targets
+            if string match --quiet --regex "['\\\\]" -- $target
+                set -a quoted (string escape -- $target)
+            else
+                set -a quoted "'$target'"
+            end
+        end
     end
 
-    # Build one escaped command line and reuse it for the history entry and
-    # execution. Escaping the targets keeps it accurate and safe to re-run when
-    # names contain spaces or special characters, while `eval` lets fish's own
-    # tokenizer handle a multi-word command (e.g. `jj restore`), including
-    # quoted arguments and repeated spaces.
-    # Only the targets are escaped; $cmd (the -c value) is intentionally left
-    # unescaped so it tokenizes, so it must only ever be trusted input.
-    set -l cmd_line (string join ' ' -- $cmd (string escape -- $targets))
-    if test $confirm = 1
-        # Enter defaults to no, except under -p/--prompt, where the command was
-        # typed out a keystroke ago and answering no again is more friction than
-        # protection. Destructive presets such as `-c 'jj restore' --confirm`
-        # keep the safer default.
-        set -l accept '^y(es)?$'
-        set -l label "Proceed? [y/N] "
-        if test $prompt = 1
-            set accept '^(y(es)?)?$'
-            set label "Proceed? [Y/n] "
-        end
-        echo "The following command will be run:"
-        echo "  $cmd_line"
-        read -l -P "$label" reply
-        or return
-        string match -qri $accept -- $reply
-        or return
+    # Build one quoted command line and reuse it for the editor buffer, the
+    # history entry, and execution. Quoting the targets keeps it accurate and
+    # safe to re-run when names contain spaces or special characters, while
+    # `eval` lets fish's own tokenizer handle a multi-word command (e.g. `jj
+    # restore`), including quoted arguments and repeated spaces.
+    # Only the targets are quoted; $cmd (the -c value) is intentionally left
+    # unquoted so it tokenizes, so it must only ever be trusted input.
+    set -l cmd_line (string join ' ' -- $cmd $quoted)
+    # -p/--prompt hands that whole line over to an editor, so the files are
+    # editable along with the command and the result is run as it stands.
+    if test $prompt = 1
+        _edit_and_run $cmd_line
+        return
     end
     history append -- $cmd_line
     eval $cmd_line
