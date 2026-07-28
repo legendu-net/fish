@@ -13,17 +13,17 @@ if status is-interactive
     end
     # =====================================================
     if command -q nvim
-        set -g EDITOR nvim
-        set -g VISUAL nvim
+        set -gx EDITOR nvim
+        set -gx VISUAL nvim
     else if command -q vim
-        set -g EDITOR vim
-        set -g VISUAL vim
+        set -gx EDITOR vim
+        set -gx VISUAL vim
     else if command -q vi
-        set -g EDITOR vi
-        set -g VISUAL vi
+        set -gx EDITOR vi
+        set -gx VISUAL vi
     else if command -q fresh
-        set -g EDITOR fresh
-        set -g VISUAL fresh
+        set -gx EDITOR fresh
+        set -gx VISUAL fresh
     end
     # =====================================================
     if command -q nvim
