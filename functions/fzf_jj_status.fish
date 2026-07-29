@@ -23,8 +23,16 @@ Args:
         command before it runs. Whether the files are prefilled as filesets or as
         paths follows -c/--cmd, so editing a jj command into a non-jj one means
         turning the \`file:\"...\"\` filesets into plain paths by hand.
-fzf leaves on enter and the command runs in the current shell, so its output
-lands in the pager and the scrollback just like a hand-typed jj diff."
+Keys: ctrl-o picks the files and leaves fzf, esc leaves without picking any,
+    tab picks more than one file (alt-a and alt-d select and deselect them all),
+    and ctrl-/ shows the preview beside the file list and hides it again.
+    Only the changed files are shown to start with. enter brings up the preview
+    over the whole screen, so that a long diff can be read without the file list
+    beside it; shift-up and shift-down scroll it, and esc, q or enter go back to
+    the file list on its own. q is an ordinary character to
+    search with as long as the file list is shown.
+The command runs in the current shell, so its output lands in the pager and the
+scrollback just like a hand-typed jj diff."
 end
 
 function fzf_jj_status --description 'Pick files changed in a jj revision with fzf and diff them'
@@ -83,10 +91,10 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     end
 
     # SHELL=fish is scoped to the fzf process so that its bindings (here the
-    # --preview one) can run fish functions. It must NOT leak any further: the
-    # command eval'd below inherits this function's environment, and a bare
-    # `fish` breaks anything that resolves $SHELL elsewhere (e.g. over ssh,
-    # where fish may not be on PATH).
+    # --preview one and the transform ones) can run fish functions. It must NOT
+    # leak any further: the command eval'd below inherits this function's
+    # environment, and a bare `fish` breaks anything that resolves $SHELL
+    # elsewhere (e.g. over ssh, where fish may not be on PATH).
     # The entries are `path<tab>status`, so both the previewer and --accept-nth
     # take everything but the last field: a file name may itself contain a tab,
     # while the status word never does. Matching is left on the whole entry on
@@ -97,9 +105,13 @@ function fzf_jj_status --description 'Pick files changed in a jj revision with f
     # names containing a newline.
     set -l files (printf '%s\0' $entries | SHELL=fish fzf --read0 --print0 --ansi --multi \
         --delimiter \t --accept-nth '..-2' \
-        --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-/:toggle-preview' \
+        --bind 'alt-a:select-all,alt-d:deselect-all,ctrl-o:accept' \
+        --bind 'enter:transform:_fzf_jj_status_preview_mode enter' \
+        --bind 'esc:transform:_fzf_jj_status_preview_mode esc' \
+        --bind 'q:transform:_fzf_jj_status_preview_mode q' \
+        --bind 'ctrl-/:transform:_fzf_jj_status_preview_mode ctrl-/' \
         --preview "_fzf_jj_status_previewer "(string escape -- $rev)" {..-2}" \
-        --preview-window '~4,80%,<80(up)' | string split0)
+        --preview-window '~4,80%,<80(up),hidden' | string split0)
     set -q files[1]
     or return
 
