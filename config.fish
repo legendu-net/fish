@@ -46,6 +46,8 @@ if status is-interactive
         isatty stdout; and echo
         return $ret
     end
+    abbr --add jjw jj workspace
+    abbr --add jjwa jj workspace add
     abbr --add jjsb jj_sync_base
     abbr --add jjs jj status
     abbr --add jjd jj diff
