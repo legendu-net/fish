@@ -244,9 +244,11 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
             set conflict 1
             continue
         end
-        ln -s ../.agents/skills "$skills"
-        or set conflict 1
-        echo "Unified $name/skills -> .agents/skills"
+        if ln -s ../.agents/skills "$skills"
+            echo "Unified $name/skills -> .agents/skills"
+        else
+            set conflict 1
+        end
     end
 
     # Only skills/ moves under a symlink; a gitignore rule for anything else
