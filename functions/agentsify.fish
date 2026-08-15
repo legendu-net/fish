@@ -145,8 +145,11 @@ function _agentsify_files --description 'Unify AI agent context files into AGENT
         echo (set_color $fish_color_error)"Error: a real CLAUDE.md remains; cannot create the symlink."(set_color normal) >&2
         return 1
     end
-    ln -s AGENTS.md "$claude"
-    echo "Linked CLAUDE.md -> AGENTS.md"
+    if ln -s AGENTS.md "$claude"
+        echo "Linked CLAUDE.md -> AGENTS.md"
+    else
+        set conflict 1
+    end
 
     return $conflict
 end
