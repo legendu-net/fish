@@ -1,4 +1,4 @@
-name: Auto Merge PR
+name: Merge PR
 on:
   # The Claude review runs with `track_progress`, which creates its tracking
   # comment when the review *starts* and then edits that same comment as the
@@ -13,8 +13,7 @@ on:
   # Renaming any of these silently disables the trigger.
   workflow_run:
     workflows:
-      - Claude Code Review
-      - Lint Fish Scripts
+      - PR Workflow
     types:
       - completed
   # Kept for approvals that come from a human rather than from Claude.
@@ -48,10 +47,10 @@ concurrency:
   # and the newest run always sees the freshest state. Do not cancel in
   # progress: a run cancelled midway through the merge API call is worse than a
   # redundant one.
-  group: auto-merge-pull-request
+  group: merge-pull-request
   cancel-in-progress: false
 jobs:
-  auto_merge_pull_request:
+  merge_pull_request:
     # A triggering workflow that failed, was cancelled or was skipped left the
     # PR unmergeable or wrote no marker, so there is nothing new to act on.
     # This job checks out no PR code, so the elevated `workflow_run` context is
@@ -59,21 +58,7 @@ jobs:
     if: |
       github.event_name != 'workflow_run'
       || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    # The concurrency group above serializes every run, so a hung run would
-    # block all merges until the default 6h timeout.
-    timeout-minutes: 10
-    steps:
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sudo env UV_INSTALL_DIR="/usr/local/bin" sh
-      - name: Auto Merge PR
-        # `--allowed-types` is intentionally left at the upstream default
-        # (build, chore, ci, docs, deps) so that only simple PRs auto-merge;
-        # anything substantive, `feat` and `fix` included, is merged by hand.
-        run: |
-          uvx --from github-rest-api@latest auto_merge_pull_request \
-            --authors dclong \
-            --approvers dclong 'claude[bot]' 'gemini-code-assist[bot]' \
-            ${{ inputs.dry_run && '--dry-run' || '' }} \
-            --token ${{ secrets.ACTIONS_TOKEN }}
+    uses: legendu-net/.github/.github/workflows/merge-pr.yaml@main
+    with:
+      dry_run: ${{ inputs.dry_run || false }}
+    secrets: inherit

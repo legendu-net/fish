@@ -7,7 +7,9 @@ through interactive tools, efficient abbreviations, and modular functions.
 ## Project Overview
 
 - **Purpose:** Provide a robust, feature-rich environment for the Fish shell.
+
 - **Key Technologies:**
+
   - **Fish Shell:** The core shell environment.
   - **Interactive Search:** Powered by `fzf`, `ripgrep` (`rg`), and `fd-find`.
   - **Tooling Integrations:** Extensive support and abbreviations for `git`, `jj` (Jujutsu), `docker`, `podman`, `toolbox`, `uv`, `hg`, `cargo`, and `eza`.
@@ -30,6 +32,7 @@ through interactive tools, efficient abbreviations, and modular functions.
     Many follow a pattern of providing interactive UIs for existing CLI tools (e.g., `fzf_ripgrep`, `fzf_history`).
   - `completions/`: Command completion scripts and YAML definitions for tools like `ldc`.
   - `fish_variables`: Persistent fish variables.
+
 ## Building and Running
 
 The best way to use this fish configuration is to install
