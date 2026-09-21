@@ -290,6 +290,10 @@ if status is-interactive
     # -----------------------------------------------------
     abbr --add calude claude
     abbr --add c claude
+    abbr --add j agy
+    abbr --add a agy
+    abbr --add jd agy --dangerously-skip-permissions
+    abbr --add ad agy --dangerously-skip-permissions
     # =====================================================
     abbr --add flatpak.zed flatpak run dev.zed.Zed
     abbr --add flatpak.keepassxc flatpak run org.keepassxc.KeePassXC
