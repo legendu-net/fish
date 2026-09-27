@@ -2,7 +2,10 @@ function _agentsify_usage
     echo "Unify AI agent context files into AGENTS.md and skills dirs into .agents/skills.
 Renames CLAUDE.md/GEMINI.md to AGENTS.md and links CLAUDE.md -> AGENTS.md.
 Merges .claude/.gemini/.codex skills/ into .agents/skills and links skills/ back.
-Syntax: agentsify [dir]"
+Moves skills listed in .agents/skills.txt into \$PROMPTS_DIR/skills (default
+~/archives/prompts, cloned from legendu-net/prompts if missing) and links
+.agents/skills/<name> back to them there.
+Syntax: agentsify [-a|--adopt NAME]... [dir]"
 end
 
 function _agentsify_kind --description 'Print the kind of a path: link, dir, file or missing'
@@ -260,8 +263,213 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
     return $conflict
 end
 
+function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning legendu-net/prompts there if missing'
+    set -l dir "$PROMPTS_DIR"
+    if test -z "$dir"
+        set dir "$HOME/archives/prompts"
+    end
+
+    if not test -e "$dir"
+        if not mkdir -p -- (path dirname -- "$dir")
+            return 1
+        end
+        if not git clone git@github.com:legendu-net/prompts.git "$dir" >&2
+            # Clean up a partial clone so the next run retries instead of
+            # silently treating a broken checkout as a valid one.
+            test -e "$dir"; and rip -- "$dir"
+            return 1
+        end
+    end
+    if not test -d "$dir"
+        echo (set_color $fish_color_error)"Error: $dir is not a directory."(set_color normal) >&2
+        return 1
+    end
+
+    path resolve -- "$dir"
+end
+
+function _agentsify_valid_skill_name --description 'Check that a string is safe to use as a single .agents/skills path segment'
+    set -l name "$argv[1]"
+    test -n "$name"
+    and not string match -q -- '*/*' "$name"
+    and not contains -- "$name" . ..
+end
+
+function _agentsify_guard_agents --description 'Refuse to operate through a symlinked .agents, .agents/skills or .agents/skills.txt'
+    set -l dir "$argv[1]"
+    for rel in .agents .agents/skills .agents/skills.txt
+        set -l path "$dir/$rel"
+        if test -L "$path"
+            echo (set_color $fish_color_error)"Error: $path is a symlink; resolve it into a real file or directory first."(set_color normal) >&2
+            return 1
+        end
+    end
+    return 0
+end
+
+function _agentsify_append_line --description 'Append a line to a file, first adding a trailing newline if the file lacks one'
+    set -l file "$argv[1]"
+    set -l line "$argv[2]"
+    if test -s "$file"; and test -n "$(tail -c1 -- "$file")"
+        echo >>"$file"
+        or return 1
+    end
+    # printf, not echo: echo reinterprets a value like "-n" as its own flag
+    # instead of writing it, silently dropping the line.
+    printf '%s\n' "$line" >>"$file"
+end
+
+function _agentsify_gitignore_add --description 'Ensure a line is present in a directory''s .gitignore'
+    set -l dir "$argv[1]"
+    set -l line "$argv[2]"
+    set -l file "$dir/.gitignore"
+
+    if test -f "$file"
+        while read -l existing
+            if test "$(string trim -- "$existing")" = "$line"
+                return 0
+            end
+        end <"$file"
+    end
+
+    _agentsify_append_line "$file" "$line"
+end
+
+function _agentsify_adopt --description 'Move named project skills into $PROMPTS_DIR/skills'
+    set -l dir "$argv[1]"
+    set -l names $argv[2..]
+    _agentsify_guard_agents "$dir"
+    or return 1
+    set -l prompts (_agentsify_prompts_dir)
+    or return 1
+
+    set -l conflict 0
+    for name in $names
+        if not _agentsify_valid_skill_name "$name"
+            echo (set_color $fish_color_error)"Error: '$name' is not a valid skill name; cannot adopt it."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+
+        set -l skill "$dir/.agents/skills/$name"
+        set -l target "$prompts/skills/$name"
+
+        if not test -d "$skill"; or test -L "$skill"
+            echo (set_color $fish_color_error)"Error: $skill is not a real directory; cannot adopt it."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+
+        set -l message ""
+        if test -e "$target"
+            if not test -d "$target"; or test -L "$target"
+                echo (set_color $fish_color_error)"Error: $target is not a real directory."(set_color normal) >&2
+                set conflict 1
+                continue
+            else if diff -rq -- "$skill" "$target" >/dev/null 2>&1
+                if not rip -- "$skill"
+                    set conflict 1
+                    continue
+                end
+                set message "Dropped $skill; identical copy already in $prompts/skills"
+            else
+                echo (set_color $fish_color_error)"Error: $skill differs from $target; merge it manually."(set_color normal) >&2
+                set conflict 1
+                continue
+            end
+        else
+            if not mkdir -p -- "$prompts/skills"; or not mv -- "$skill" "$target"
+                set conflict 1
+                continue
+            end
+            set message "Adopted $name into $prompts/skills"
+        end
+
+        set -l manifest "$dir/.agents/skills.txt"
+        if not test -e "$manifest"; or not grep -qx -- "$name" "$manifest"
+            if not _agentsify_append_line "$manifest" "$name"
+                echo (set_color $fish_color_error)"Error: could not record $name in $manifest."(set_color normal) >&2
+                set conflict 1
+                continue
+            end
+        end
+        echo "$message"
+    end
+
+    return $conflict
+end
+
+function _agentsify_link --description 'Symlink skills listed in .agents/skills.txt to $PROMPTS_DIR/skills'
+    set -l dir "$argv[1]"
+    set -l manifest "$dir/.agents/skills.txt"
+    if test -L "$manifest"
+        echo (set_color $fish_color_error)"Error: $manifest is a symlink; resolve it into a real file first."(set_color normal) >&2
+        return 1
+    end
+    if not test -f "$manifest"
+        return 2
+    end
+    _agentsify_guard_agents "$dir"
+    or return 1
+
+    set -l prompts (_agentsify_prompts_dir)
+    or return 1
+
+    set -l conflict 0
+    while read -l line
+        set -l name (string trim -- "$line")
+        if test -z "$name"; or string match -q -- '#*' "$name"
+            continue
+        end
+        if not _agentsify_valid_skill_name "$name"
+            echo (set_color $fish_color_error)"Error: '$name' in $manifest is not a valid skill name."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+
+        set -l source "$prompts/skills/$name"
+        if not test -d "$source"; or test -L "$source"
+            echo (set_color $fish_color_error)"Error: $source does not exist or is a symlink; cannot link $name."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+
+        set -l link "$dir/.agents/skills/$name"
+        set -l kind (_agentsify_kind "$link")
+        if test "$kind" = dir
+            echo (set_color $fish_color_error)"Error: $link is a real directory; run 'agentsify --adopt $name' first."(set_color normal) >&2
+            set conflict 1
+            continue
+        else if test "$kind" = file
+            echo (set_color $fish_color_error)"Error: $link is a file; resolve it manually."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+
+        if not mkdir -p -- "$dir/.agents/skills"
+            set conflict 1
+            continue
+        end
+
+        if not test "$kind" = link; or not test "$(readlink -- "$link")" = "$source"
+            if ln -sfn -- "$source" "$link"
+                echo "Linked .agents/skills/$name -> $source"
+            else
+                set conflict 1
+                continue
+            end
+        end
+
+        if not _agentsify_gitignore_add "$dir" "/.agents/skills/$name"
+            set conflict 1
+        end
+    end <"$manifest"
+
+    return $conflict
+end
+
 function agentsify --description 'Unify AI agent context files into AGENTS.md and skills dirs into .agents/skills'
-    argparse h/help -- $argv
+    argparse h/help a/adopt=+ -- $argv
     or return 1
     if set -q _flag_help
         _agentsify_usage
@@ -288,11 +496,23 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
     _agentsify_skills "$dir"
     set -l skills_status $status
 
-    if test $files_status -eq 2; and test $skills_status -eq 2
-        echo (set_color $fish_color_error)"Error: no AGENTS.md, CLAUDE.md, GEMINI.md or agent skills directory found in $dir!"(set_color normal) >&2
+    set -l adopt_status 2
+    if set -q _flag_adopt
+        _agentsify_adopt "$dir" $_flag_adopt
+        set adopt_status $status
+    end
+
+    set -l link_status 2
+    if test -f "$dir/.agents/skills.txt"
+        _agentsify_link "$dir"
+        set link_status $status
+    end
+
+    if test $files_status -eq 2; and test $skills_status -eq 2; and test $adopt_status -eq 2; and test $link_status -eq 2
+        echo (set_color $fish_color_error)"Error: no AGENTS.md, CLAUDE.md, GEMINI.md, agent skills directory or skills.txt found in $dir!"(set_color normal) >&2
         return 1
     end
-    if test $files_status -eq 1; or test $skills_status -eq 1
+    if test $files_status -eq 1; or test $skills_status -eq 1; or test $adopt_status -eq 1; or test $link_status -eq 1
         return 1
     end
 
