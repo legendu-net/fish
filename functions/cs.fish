@@ -24,9 +24,22 @@ function cs --description 'Change directory and list its contents'
         echo (set_color $fish_color_error)"Error: failed to cd into $dir!"(set_color normal) >&2
         return 1
     end
+
+    set -l max_entries 1000
+    set -l total (command ls | wc -l | string trim)
+
+    set -l cmd
     if command -q eza
-        eza -lh --color=auto
+        set cmd eza -lh --color=auto
     else
-        ls -lh --color=auto
+        set cmd ls -lh --color=auto
+    end
+
+    if test $total -gt $max_entries
+        echo (set_color yellow)"Note: $total entries found, showing first $max_entries."(set_color normal) >&2
+        set -l names (command ls | head -n $max_entries)
+        $cmd -d -- $names
+    else
+        $cmd
     end
 end
