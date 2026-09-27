@@ -273,6 +273,8 @@ function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning leg
         if not mkdir -p -- (path dirname -- "$dir")
             return 1
         end
+        # git's own clone progress goes to stderr; redirecting stdout there
+        # too keeps it out of this function's command-substitution result.
         if not git clone git@github.com:legendu-net/prompts.git "$dir" >&2
             # Clean up a partial clone so the next run retries instead of
             # silently treating a broken checkout as a valid one.
@@ -451,7 +453,17 @@ function _agentsify_link --description 'Symlink skills listed in .agents/skills.
             continue
         end
 
-        if not test "$kind" = link; or not test "$(readlink -- "$link")" = "$source"
+        set -l relink 1
+        if test "$kind" = link
+            set -l target (readlink -- "$link")
+            if test "$target" = "$source"
+                set relink 0
+            else
+                echo "Replacing .agents/skills/$name symlink that pointed to $target"
+            end
+        end
+
+        if test $relink -eq 1
             if ln -sfn -- "$source" "$link"
                 echo "Linked .agents/skills/$name -> $source"
             else
