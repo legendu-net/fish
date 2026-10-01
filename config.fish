@@ -289,7 +289,7 @@ if status is-interactive
         --line-numbers'
     # -----------------------------------------------------
     abbr --add calude claude
-    abbr --add c claude
+    abbr --add c --function _expand_claude
     abbr --add j agy
     abbr --add a agy
     abbr --add jd agy --dangerously-skip-permissions
