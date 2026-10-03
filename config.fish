@@ -144,7 +144,7 @@ if status is-interactive
     abbr --add gopsgh gopass show api_keys/github
     # -----------------------------------------------------
     abbr --add tbl toolbox list
-    abbr --add tbe 'begin; set -l c (tbx version); and SHELL=fish toolbox enter $c; end'
+    abbr --add tbe --function _expand_tbe
     abbr --add ftbe fzf_toolbx_enter
     # -----------------------------------------------------
     abbr --add pm podman
