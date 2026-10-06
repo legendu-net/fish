@@ -4,6 +4,7 @@ function _expand_claude
         echo claude
     else
         set -l container (tbx version jupyterhub-ds)
+        or return
         echo "toolbox run -c $container claude"
     end
 end
