@@ -1,11 +1,17 @@
 function _agentsify_usage
     echo "Unify AI agent context files into AGENTS.md and skills dirs into .agents/skills.
-Renames CLAUDE.md/GEMINI.md to AGENTS.md and links CLAUDE.md -> AGENTS.md.
+Renames CLAUDE.md/GEMINI.md to AGENTS.md, keeping one that imports @AGENTS.md,
+and removes CLAUDE.md -> AGENTS.md symlinks (claude reads AGENTS.md in projects).
+Claude's config dir (\$CLAUDE_CONFIG_DIR, default ~/.claude) gets a CLAUDE.md
+importing @AGENTS.md, since claude reads only CLAUDE.md there.
 Merges .claude/.gemini/.codex skills/ into .agents/skills and links skills/ back.
-Moves skills listed in .agents/skills.txt into \$PROMPTS_DIR/skills (default
-~/archives/prompts, cloned from legendu-net/prompts if missing) and links
-.agents/skills/<name> back to them there.
-Syntax: agentsify [-a|--adopt NAME]... [dir]"
+Links entries listed in .agents/links.txt (AGENTS.md or skills/<name>) to the
+same paths under \$PROMPTS_DIR (default ~/archives/prompts, cloned from
+legendu-net/prompts if missing): AGENTS.md -> \$PROMPTS_DIR/AGENTS.md and
+.agents/skills/<name> -> \$PROMPTS_DIR/skills/<name>. --adopt moves an entry
+into \$PROMPTS_DIR first and records it in .agents/links.txt. --adopt-all adopts
+every local AGENTS.md or skill identical to its copy in \$PROMPTS_DIR.
+Syntax: agentsify [-a|--adopt ENTRY]... [--adopt-all] [dir]"
 end
 
 function _agentsify_kind --description 'Print the kind of a path: link, dir, file or missing'
@@ -93,67 +99,99 @@ function _agentsify_warn_gitignore --description 'Warn about .gitignore rules th
     end
 end
 
+function _agentsify_imports_agents --description 'Check whether a context file imports AGENTS.md via an @AGENTS.md line'
+    test -f "$argv[1]"
+    and string trim <"$argv[1]" | string match -q -r -- '^@(\./)?AGENTS\.md$'
+end
+
 function _agentsify_files --description 'Unify AI agent context files into AGENTS.md'
     set -l dir "$argv[1]"
+    # The expected target of an AGENTS.md linked via .agents/links.txt, if any.
+    set -l linked "$argv[2]"
     set -l agents "$dir/AGENTS.md"
-    if test -L "$agents"
+    # Any other symlink (e.g. AGENTS.md -> CLAUDE.md) would make the folding
+    # below delete the only real copy, so refuse it.
+    if test -L "$agents"; and begin
+            test -z "$linked"; or test "$(readlink -- "$agents")" != "$linked"
+        end
         echo (set_color $fish_color_error)"Error: $agents is a symlink; resolve it into a regular file first."(set_color normal) >&2
         return 1
     end
 
     # Ensure AGENTS.md exists, renaming the first real source file into it.
+    # Without one, still tidy up CLAUDE.md below: in a fresh checkout a
+    # listed AGENTS.md is only linked later, by _agentsify_link.
+    set -l found 1
     if not test -e "$agents"
         set -l source ""
         for name in CLAUDE.md GEMINI.md
             set -l file "$dir/$name"
-            if test -f "$file"; and not test -L "$file"
+            if test -f "$file"; and not test -L "$file"; and not _agentsify_imports_agents "$file"
                 set source "$file"
                 break
             end
         end
         if test -z "$source"
-            # Nothing to unify; the caller decides whether that is an error.
-            return 2
+            set found 0
+        else
+            mv -- "$source" "$agents"
+            or return 1
+            echo "Renamed "(path basename -- "$source")" -> AGENTS.md"
         end
-        mv -- "$source" "$agents"
-        or return 1
-        echo "Renamed "(path basename -- "$source")" -> AGENTS.md"
     end
 
     # Fold any remaining real CLAUDE.md/GEMINI.md into AGENTS.md.
     set -l conflict 0
-    for name in CLAUDE.md GEMINI.md
-        set -l file "$dir/$name"
-        if test -L "$file"; or not test -e "$file"
-            continue
-        end
-        if cmp -s -- "$file" "$agents"
-            rm -- "$file"
-        else
-            echo (set_color $fish_color_error)"Error: $file differs from AGENTS.md; merge it manually."(set_color normal) >&2
-            set conflict 1
+    if test $found -eq 1
+        for name in CLAUDE.md GEMINI.md
+            set -l file "$dir/$name"
+            if test -L "$file"; or not test -e "$file"
+                continue
+            end
+            if _agentsify_imports_agents "$file"
+                continue
+            end
+            if cmp -s -- "$file" "$agents"
+                rm -- "$file"
+            else
+                echo (set_color $fish_color_error)"Error: $file differs from AGENTS.md; merge it manually."(set_color normal) >&2
+                set conflict 1
+            end
         end
     end
 
-    # Link CLAUDE.md -> AGENTS.md, since the claude cli only reads CLAUDE.md.
+    # claude reads AGENTS.md in projects, so a CLAUDE.md -> AGENTS.md link
+    # left by an earlier run is redundant.
     set -l claude "$dir/CLAUDE.md"
-    if test -L "$claude"
-        set -l target (readlink "$claude")
-        if test "$target" != AGENTS.md
-            echo "Replacing CLAUDE.md symlink that pointed to $target"
-        end
+    if test -L "$claude"; and test "$(readlink -- "$claude")" = AGENTS.md
         rm -- "$claude"
-    end
-    if test -e "$claude"
-        echo (set_color $fish_color_error)"Error: a real CLAUDE.md remains; cannot create the symlink."(set_color normal) >&2
-        return 1
-    end
-    if ln -s AGENTS.md "$claude"
-        echo "Linked CLAUDE.md -> AGENTS.md"
-    else
-        set conflict 1
+        and echo "Removed CLAUDE.md -> AGENTS.md symlink"
+        or set conflict 1
+        set found 1
     end
 
+    # claude reads only CLAUDE.md from its config dir, so import AGENTS.md there.
+    set -l config "$CLAUDE_CONFIG_DIR"
+    if test -z "$config"
+        set config "$HOME/.claude"
+    end
+    if test -d "$config"; and test "$(path resolve -- "$dir")" = "$(path resolve -- "$config")"
+        if test (_agentsify_kind "$claude") = missing; and begin
+                test -e "$agents"; or test -n "$linked"
+            end
+            if printf '%s\n' @AGENTS.md >"$claude"
+                echo "Created CLAUDE.md importing @AGENTS.md"
+            else
+                set conflict 1
+            end
+            set found 1
+        end
+    end
+
+    if test $found -eq 0
+        # Nothing to unify; the caller decides whether that is an error.
+        return 2
+    end
     return $conflict
 end
 
@@ -297,9 +335,23 @@ function _agentsify_valid_skill_name --description 'Check that a string is safe 
     and not contains -- "$name" . ..
 end
 
-function _agentsify_guard_agents --description 'Refuse to operate through a symlinked .agents, .agents/skills or .agents/skills.txt'
+function _agentsify_link_entry --description 'Print the local path and kind (file or dir) that a .agents/links.txt entry maps to'
+    set -l entry "$argv[1]"
+    if test "$entry" = AGENTS.md
+        echo AGENTS.md
+        echo file
+        return 0
+    end
+    set -l name (string replace -r -- '^skills/' '' "$entry")
+    and _agentsify_valid_skill_name "$name"
+    or return 1
+    echo ".agents/skills/$name"
+    echo dir
+end
+
+function _agentsify_guard_agents --description 'Refuse to operate through a symlinked .agents, .agents/skills or .agents/links.txt'
     set -l dir "$argv[1]"
-    for rel in .agents .agents/skills .agents/skills.txt
+    for rel in .agents .agents/skills .agents/links.txt
         set -l path "$dir/$rel"
         if test -L "$path"
             echo (set_color $fish_color_error)"Error: $path is a symlink; resolve it into a real file or directory first."(set_color normal) >&2
@@ -337,60 +389,66 @@ function _agentsify_gitignore_add --description 'Ensure a line is present in a d
     _agentsify_append_line "$file" "$line"
 end
 
-function _agentsify_adopt --description 'Move named project skills into $PROMPTS_DIR/skills'
+function _agentsify_adopt --description 'Move named project entries into $PROMPTS_DIR'
     set -l dir "$argv[1]"
-    set -l names $argv[2..]
+    set -l entries $argv[2..]
     _agentsify_guard_agents "$dir"
     or return 1
     set -l prompts (_agentsify_prompts_dir)
     or return 1
 
     set -l conflict 0
-    for name in $names
-        if not _agentsify_valid_skill_name "$name"
-            echo (set_color $fish_color_error)"Error: '$name' is not a valid skill name; cannot adopt it."(set_color normal) >&2
+    for entry in $entries
+        set -l info (_agentsify_link_entry "$entry")
+        if test (count $info) -ne 2
+            echo (set_color $fish_color_error)"Error: '$entry' is not a supported entry (AGENTS.md or skills/<name>); cannot adopt it."(set_color normal) >&2
             set conflict 1
             continue
         end
+        set -l kind $info[2]
+        set -l local "$dir/$info[1]"
+        set -l target "$prompts/$entry"
 
-        set -l skill "$dir/.agents/skills/$name"
-        set -l target "$prompts/skills/$name"
-
-        if not test -d "$skill"; or test -L "$skill"
-            echo (set_color $fish_color_error)"Error: $skill is not a real directory; cannot adopt it."(set_color normal) >&2
+        if test (_agentsify_kind "$local") != $kind
+            echo (set_color $fish_color_error)"Error: $local is not a real $kind; cannot adopt it."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+        # Run inside $PROMPTS_DIR, the "identical copy" is the file itself.
+        if test "$(path resolve -- "$local")" = "$(path resolve -- "$target")"
+            echo (set_color $fish_color_error)"Error: $local is already in $prompts; cannot adopt it."(set_color normal) >&2
             set conflict 1
             continue
         end
 
         set -l message ""
-        if test -e "$target"
-            if not test -d "$target"; or test -L "$target"
-                echo (set_color $fish_color_error)"Error: $target is not a real directory."(set_color normal) >&2
-                set conflict 1
-                continue
-            else if diff -rq -- "$skill" "$target" >/dev/null 2>&1
-                if not rip -- "$skill"
-                    set conflict 1
-                    continue
-                end
-                set message "Dropped $skill; identical copy already in $prompts/skills"
-            else
-                echo (set_color $fish_color_error)"Error: $skill differs from $target; merge it manually."(set_color normal) >&2
+        set -l target_kind (_agentsify_kind "$target")
+        if test "$target_kind" = missing
+            if not mkdir -p -- (path dirname -- "$target"); or not mv -- "$local" "$target"
                 set conflict 1
                 continue
             end
+            set message "Adopted $entry into $prompts"
+        else if test "$target_kind" != $kind
+            echo (set_color $fish_color_error)"Error: $target is not a real $kind."(set_color normal) >&2
+            set conflict 1
+            continue
+        else if diff -rq -- "$local" "$target" >/dev/null 2>&1
+            if not rip -- "$local"
+                set conflict 1
+                continue
+            end
+            set message "Dropped $local; identical copy already at $target"
         else
-            if not mkdir -p -- "$prompts/skills"; or not mv -- "$skill" "$target"
-                set conflict 1
-                continue
-            end
-            set message "Adopted $name into $prompts/skills"
+            echo (set_color $fish_color_error)"Error: $local differs from $target; merge it manually."(set_color normal) >&2
+            set conflict 1
+            continue
         end
 
-        set -l manifest "$dir/.agents/skills.txt"
-        if not test -e "$manifest"; or not grep -qx -- "$name" "$manifest"
-            if not _agentsify_append_line "$manifest" "$name"
-                echo (set_color $fish_color_error)"Error: could not record $name in $manifest."(set_color normal) >&2
+        set -l manifest "$dir/.agents/links.txt"
+        if not test -e "$manifest"; or not grep -qx -- "$entry" "$manifest"
+            if not mkdir -p -- "$dir/.agents"; or not _agentsify_append_line "$manifest" "$entry"
+                echo (set_color $fish_color_error)"Error: could not record $entry in $manifest."(set_color normal) >&2
                 set conflict 1
                 continue
             end
@@ -401,9 +459,60 @@ function _agentsify_adopt --description 'Move named project skills into $PROMPTS
     return $conflict
 end
 
-function _agentsify_link --description 'Symlink skills listed in .agents/skills.txt to $PROMPTS_DIR/skills'
+function _agentsify_adopt_all --description 'Adopt every local AGENTS.md or skill identical to its $PROMPTS_DIR copy'
     set -l dir "$argv[1]"
-    set -l manifest "$dir/.agents/skills.txt"
+    _agentsify_guard_agents "$dir"
+    or return 1
+
+    set -l candidates AGENTS.md
+    for skill in "$dir"/.agents/skills/*
+        set -a candidates "skills/"(path basename -- "$skill")
+    end
+    # Keep only real local copies, so nothing to adopt never clones prompts.
+    set -l locals
+    for entry in $candidates
+        set -l info (_agentsify_link_entry "$entry")
+        if test (count $info) -eq 2; and test (_agentsify_kind "$dir/$info[1]") = $info[2]
+            set -a locals "$entry"
+        end
+    end
+    if test (count $locals) -eq 0
+        return 2
+    end
+
+    set -l prompts (_agentsify_prompts_dir)
+    or return 1
+
+    # Only identical copies are adopted; moving a new or diverged one into
+    # $PROMPTS_DIR is left to an explicit --adopt.
+    set -l entries
+    for entry in $locals
+        set -l info (_agentsify_link_entry "$entry")
+        set -l kind $info[2]
+        set -l target "$prompts/$entry"
+        set -l target_kind (_agentsify_kind "$target")
+        if test "$target_kind" = missing
+            echo "Skipped $entry; not in $prompts yet (use --adopt $entry to move it there)"
+        else if test "$target_kind" != $kind
+            echo "Skipped $entry; $target is not a real $kind"
+        else if test "$(path resolve -- "$dir/$info[1]")" = "$(path resolve -- "$target")"
+            echo "Skipped $entry; it is already in $prompts"
+        else if diff -rq -- "$dir/$info[1]" "$target" >/dev/null 2>&1
+            set -a entries "$entry"
+        else
+            echo "Skipped $entry; it differs from $target"
+        end
+    end
+
+    if test (count $entries) -eq 0
+        return 2
+    end
+    _agentsify_adopt "$dir" $entries
+end
+
+function _agentsify_link --description 'Symlink entries listed in .agents/links.txt to $PROMPTS_DIR'
+    set -l dir "$argv[1]"
+    set -l manifest "$dir/.agents/links.txt"
     if test -L "$manifest"
         echo (set_color $fish_color_error)"Error: $manifest is a symlink; resolve it into a real file first."(set_color normal) >&2
         return 1
@@ -419,60 +528,64 @@ function _agentsify_link --description 'Symlink skills listed in .agents/skills.
 
     set -l conflict 0
     while read -l line
-        set -l name (string trim -- "$line")
-        if test -z "$name"; or string match -q -- '#*' "$name"
+        set -l entry (string trim -- "$line")
+        if test -z "$entry"; or string match -q -- '#*' "$entry"
             continue
         end
-        if not _agentsify_valid_skill_name "$name"
-            echo (set_color $fish_color_error)"Error: '$name' in $manifest is not a valid skill name."(set_color normal) >&2
+        set -l info (_agentsify_link_entry "$entry")
+        if test (count $info) -ne 2
+            echo (set_color $fish_color_error)"Error: '$entry' in $manifest is not a supported entry (AGENTS.md or skills/<name>)."(set_color normal) >&2
+            set conflict 1
+            continue
+        end
+        set -l rel $info[1]
+        set -l kind $info[2]
+
+        set -l source "$prompts/$entry"
+        if test (_agentsify_kind "$source") != $kind
+            echo (set_color $fish_color_error)"Error: $source is not a real $kind; cannot link $entry."(set_color normal) >&2
             set conflict 1
             continue
         end
 
-        set -l source "$prompts/skills/$name"
-        if not test -d "$source"; or test -L "$source"
-            echo (set_color $fish_color_error)"Error: $source does not exist or is a symlink; cannot link $name."(set_color normal) >&2
+        set -l link "$dir/$rel"
+        set -l link_kind (_agentsify_kind "$link")
+        if test "$link_kind" = $kind
+            echo (set_color $fish_color_error)"Error: $link is a real $kind; run 'agentsify --adopt $entry' first."(set_color normal) >&2
+            set conflict 1
+            continue
+        else if test "$link_kind" != link; and test "$link_kind" != missing
+            echo (set_color $fish_color_error)"Error: $link is a $link_kind; resolve it manually."(set_color normal) >&2
             set conflict 1
             continue
         end
 
-        set -l link "$dir/.agents/skills/$name"
-        set -l kind (_agentsify_kind "$link")
-        if test "$kind" = dir
-            echo (set_color $fish_color_error)"Error: $link is a real directory; run 'agentsify --adopt $name' first."(set_color normal) >&2
-            set conflict 1
-            continue
-        else if test "$kind" = file
-            echo (set_color $fish_color_error)"Error: $link is a file; resolve it manually."(set_color normal) >&2
-            set conflict 1
-            continue
-        end
-
-        if not mkdir -p -- "$dir/.agents/skills"
+        if not mkdir -p -- (path dirname -- "$link")
             set conflict 1
             continue
         end
 
         set -l relink 1
-        if test "$kind" = link
+        if test "$link_kind" = link
             set -l target (readlink -- "$link")
             if test "$target" = "$source"
                 set relink 0
             else
-                echo "Replacing .agents/skills/$name symlink that pointed to $target"
+                echo "Replacing $rel symlink that pointed to $target"
             end
         end
 
         if test $relink -eq 1
             if ln -sfn -- "$source" "$link"
-                echo "Linked .agents/skills/$name -> $source"
+                echo "Linked $rel -> $source"
             else
                 set conflict 1
                 continue
             end
         end
 
-        if not _agentsify_gitignore_add "$dir" "/.agents/skills/$name"
+        # The link points into this machine's $PROMPTS_DIR, so keep it out of git.
+        if not _agentsify_gitignore_add "$dir" "/$rel"
             set conflict 1
         end
     end <"$manifest"
@@ -481,7 +594,7 @@ function _agentsify_link --description 'Symlink skills listed in .agents/skills.
 end
 
 function agentsify --description 'Unify AI agent context files into AGENTS.md and skills dirs into .agents/skills'
-    argparse h/help a/adopt=+ -- $argv
+    argparse h/help a/adopt=+ adopt-all -- $argv
     or return 1
     if set -q _flag_help
         _agentsify_usage
@@ -503,7 +616,17 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
         return 1
     end
 
-    _agentsify_files "$dir"
+    # An AGENTS.md listed in links.txt is expected to be a symlink into
+    # $PROMPTS_DIR; tell _agentsify_files which target to accept.
+    set -l agents_target ""
+    set -l manifest "$dir/.agents/links.txt"
+    if test -f "$manifest"; and not test -L "$manifest"; and string trim <"$manifest" | string match -q -- AGENTS.md
+        set -l prompts (_agentsify_prompts_dir)
+        or return 1
+        set agents_target "$prompts/AGENTS.md"
+    end
+
+    _agentsify_files "$dir" "$agents_target"
     set -l files_status $status
     _agentsify_skills "$dir"
     set -l skills_status $status
@@ -514,17 +637,23 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
         set adopt_status $status
     end
 
+    set -l adopt_all_status 2
+    if set -q _flag_adopt_all
+        _agentsify_adopt_all "$dir"
+        set adopt_all_status $status
+    end
+
     set -l link_status 2
-    if test -f "$dir/.agents/skills.txt"
+    if test -f "$manifest"
         _agentsify_link "$dir"
         set link_status $status
     end
 
-    if test $files_status -eq 2; and test $skills_status -eq 2; and test $adopt_status -eq 2; and test $link_status -eq 2
-        echo (set_color $fish_color_error)"Error: no AGENTS.md, CLAUDE.md, GEMINI.md, agent skills directory or skills.txt found in $dir!"(set_color normal) >&2
+    if test $files_status -eq 2; and test $skills_status -eq 2; and test $adopt_status -eq 2; and test $adopt_all_status -eq 2; and test $link_status -eq 2
+        echo (set_color $fish_color_error)"Error: no AGENTS.md, CLAUDE.md, GEMINI.md, agent skills directory or links.txt found in $dir!"(set_color normal) >&2
         return 1
     end
-    if test $files_status -eq 1; or test $skills_status -eq 1; or test $adopt_status -eq 1; or test $link_status -eq 1
+    if test $files_status -eq 1; or test $skills_status -eq 1; or test $adopt_status -eq 1; or test $adopt_all_status -eq 1; or test $link_status -eq 1
         return 1
     end
 
