@@ -10,6 +10,7 @@ function _expand_agy --argument-names dangerous
         echo $cmd
     else
         set -l container (tbx version jupyterhub-ds)
+        or return
         echo "toolbox run -c $container $cmd"
     end
 end
