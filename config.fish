@@ -87,6 +87,8 @@ if status is-interactive
     abbr --add jjgra jj git remote add
     abbr --add jjgrao jj git remote add origin URL
     abbr --add jjl jj log
+    abbr --add jjhv 'jj log -r "visible_heads()"'
+    abbr --add jjhm 'jj log -r "heads(mutable())"'
     abbr --add jjce jj config edit
     abbr --add jjcer jj config edit --repo
     abbr --add jjcsue jj config set --user user.email
@@ -188,9 +190,7 @@ if status is-interactive
     abbr --add uv.jb.start HOST=127.0.0.1 NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book start
     abbr --add uv.jb.build HOST=127.0.0.1 NODE_OPTIONS=--max-old-space-size=8192 uv run jupyter-book build --html
     abbr --add uv.ipython uv run --python 3.14 \
-        --with aiutil[all] \
         --with github_rest_api \
-        --with dockeree \
         --with IPython \
         python -m IPython
     abbr --add uvx.ruff.format uvx ruff format
