@@ -52,12 +52,15 @@ if status is-interactive
     abbr --add jjs jj status
     abbr --add jjd jj diff
     abbr --add jjdi jj diff
+    abbr --add jjdp jj diff -r @-
+    abbr --add jjdps jj diff --summary -r @-
     abbr --add jjds 'jj diff | agy --model "Gemini 3.5 Flash (Low)" --prompt "Write a concise conventional commit message for this diff. Output ONLY the message."'
     abbr --add jjr jj restore
     abbr --add jjrs jj restore
     abbr --add jjc 'jj commit --editor'
     abbr --add jjde 'jj describe --editor'
     abbr --add jjn jj new
+    abbr --add jjnp jj new -B @ --no-edit
     abbr --add jjsp jj split
     abbr --add jja jj abandon
     abbr --add jje jj edit @-
@@ -87,8 +90,9 @@ if status is-interactive
     abbr --add jjgra jj git remote add
     abbr --add jjgrao jj git remote add origin URL
     abbr --add jjl jj log
-    abbr --add jjhv 'jj log -r "visible_heads()"'
+    abbr --add jjh 'jj log -r "heads(mutable())"'
     abbr --add jjhm 'jj log -r "heads(mutable())"'
+    abbr --add jjhv 'jj log -r "visible_heads()"'
     abbr --add jjce jj config edit
     abbr --add jjcer jj config edit --repo
     abbr --add jjcsue jj config set --user user.email
