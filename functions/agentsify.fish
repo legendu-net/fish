@@ -6,8 +6,8 @@ Claude's config dir (\$CLAUDE_CONFIG_DIR, default ~/.claude) gets a CLAUDE.md
 importing @AGENTS.md, since claude reads only CLAUDE.md there.
 Merges .claude/.gemini/.codex skills/ into .agents/skills and links skills/ back.
 Links entries listed in .agents/links.txt (AGENTS.md or skills/<name>) to the
-same paths under \$PROMPTS_DIR (default ~/archives/prompts, cloned from
-legendu-net/prompts if missing): AGENTS.md -> \$PROMPTS_DIR/AGENTS.md and
+same paths under \$PROMPTS_DIR (default ~/.agents, cloned from
+legendu-net/agents if missing): AGENTS.md -> \$PROMPTS_DIR/AGENTS.md and
 .agents/skills/<name> -> \$PROMPTS_DIR/skills/<name>. --adopt moves an entry
 into \$PROMPTS_DIR first and records it in .agents/links.txt. --adopt-all adopts
 every local AGENTS.md or skill identical to its copy in \$PROMPTS_DIR.
@@ -301,10 +301,10 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
     return $conflict
 end
 
-function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning legendu-net/prompts there if missing'
+function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning legendu-net/agents there if missing'
     set -l dir "$PROMPTS_DIR"
     if test -z "$dir"
-        set dir "$HOME/archives/prompts"
+        set dir "$HOME/.agents"
     end
 
     if not test -e "$dir"
@@ -313,7 +313,7 @@ function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning leg
         end
         # git's own clone progress goes to stderr; redirecting stdout there
         # too keeps it out of this function's command-substitution result.
-        if not git clone git@github.com:legendu-net/prompts.git "$dir" >&2
+        if not git clone git@github.com:legendu-net/agents.git "$dir" >&2
             # Clean up a partial clone so the next run retries instead of
             # silently treating a broken checkout as a valid one.
             test -e "$dir"; and rip -- "$dir"
@@ -322,6 +322,13 @@ function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning leg
     end
     if not test -d "$dir"
         echo (set_color $fish_color_error)"Error: $dir is not a directory."(set_color normal) >&2
+        return 1
+    end
+    # ~/.agents often already exists (e.g. created by other skill installers)
+    # before legendu-net/agents is cloned there; refuse it rather than failing
+    # later with confusing "not a real file" link errors.
+    if not test -e "$dir/.git"; and not test -d "$dir/.jj"
+        echo (set_color $fish_color_error)"Error: $dir exists but is not a git checkout; move it aside, clone legendu-net/agents there and move its contents back."(set_color normal) >&2
         return 1
     end
 
