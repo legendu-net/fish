@@ -59,6 +59,7 @@ if status is-interactive
     abbr --add jjrs jj restore
     abbr --add jjc 'jj commit --editor'
     abbr --add jjde 'jj describe --editor'
+    abbr --add jjdep 'jj describe --editor @-'
     abbr --add jjn jj new
     abbr --add jjnp jj new -B @ --no-edit
     abbr --add jjsp jj split
