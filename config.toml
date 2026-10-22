@@ -1,0 +1,7 @@
+# Example configuration; active config: ~/.config/agentsify/config.toml
+# Tool directories that receive skills -> ../.agents/skills links.
+# Supported: ".claude", ".gemini", ".codex". Use [] to disable link creation.
+# Existing links are preserved. Missing tool directories are created.
+# Codex and agy read ~/.agents/skills/ directly and do not need link-back links.
+# Claude needs a link in .claude/skills to discover the shared skills.
+link_back = [".claude"]

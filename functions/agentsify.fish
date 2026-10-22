@@ -4,7 +4,11 @@ Renames CLAUDE.md/GEMINI.md to AGENTS.md, keeping one that imports @AGENTS.md,
 and removes CLAUDE.md -> AGENTS.md symlinks (claude reads AGENTS.md in projects).
 Claude's config dir (\$CLAUDE_CONFIG_DIR, default ~/.claude) gets a CLAUDE.md
 importing @AGENTS.md, since claude reads only CLAUDE.md there.
-Merges .claude/.gemini/.codex skills/ into .agents/skills and links skills/ back.
+Merges .claude/.gemini/.codex skills/ into .agents/skills.
+Link-back directories are configured by link_back in
+~/.config/agentsify/config.toml (default: [\".claude\"]).
+Supported directories: .claude, .gemini, .codex; [] disables link creation.
+Existing links are preserved. Reading TOML requires Python 3.11+.
 Links entries listed in .agents/links.txt (AGENTS.md or skills/<name>) to the
 same paths under \$PROMPTS_DIR (default ~/.agents, cloned from
 legendu-net/agents if missing): AGENTS.md -> \$PROMPTS_DIR/AGENTS.md and
@@ -195,6 +199,35 @@ function _agentsify_files --description 'Unify AI agent context files into AGENT
     return $conflict
 end
 
+function _agentsify_link_back --description 'Read and validate the configured skills link-back directories'
+    set -l config "$HOME/.config/agentsify/config.toml"
+    if not test -e "$config"
+        echo .claude
+        return 0
+    end
+    python3 -c '
+import sys
+import tomllib
+
+try:
+    with open(sys.argv[1], "rb") as stream:
+        config = tomllib.load(stream)
+    if config.keys() - {"link_back"}:
+        raise ValueError("supported setting: link_back")
+    tools = config.get("link_back", [".claude"])
+    if not isinstance(tools, list) or any(
+        not isinstance(tool, str) or tool not in (".claude", ".gemini", ".codex")
+        for tool in tools
+    ):
+        raise ValueError("link_back must be an array of .claude, .gemini, or .codex")
+except (OSError, ValueError) as error:
+    print(f"Error: {sys.argv[1]}: {error}", file=sys.stderr)
+    sys.exit(1)
+for tool in dict.fromkeys(tools):
+    print(tool)
+' "$config"
+end
+
 function _agentsify_skills --description 'Unify per-tool skills/ directories into .agents/skills'
     set -l dir "$argv[1]"
     set -l agents_skills "$dir/.agents/skills"
@@ -258,7 +291,7 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
             if test "$target" = ../.agents/skills
                 continue
             end
-            echo "Replacing $name/skills symlink that pointed to $target"
+            echo "Removing $name/skills symlink that pointed to $target"
             rm -- "$skills"
             or set conflict 1
         else
@@ -267,16 +300,14 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
         end
     end
 
-    # Link skills/ back into every tool dir that already exists, even one
-    # that never had its own skills/, so it can see what other tools bring.
-    # A tool dir that doesn't exist at all is left alone rather than
-    # fabricated just to hold a symlink.
-    for name in $tool_names
+    # Create configured tool directories even if they did not have skills/.
+    for name in $argv[2..]
         if contains -- "$name" $aliased
             continue
         end
         set -l tool "$dir/$name"
-        if not test -d "$tool"
+        if not mkdir -p -- "$tool"
+            set conflict 1
             continue
         end
         set -l skills "$tool/skills"
@@ -623,6 +654,10 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
         return 1
     end
 
+    # Validate configuration before any filesystem changes.
+    set -l link_back (_agentsify_link_back)
+    or return 1
+
     # An AGENTS.md listed in links.txt is expected to be a symlink into
     # $PROMPTS_DIR; tell _agentsify_files which target to accept.
     set -l agents_target ""
@@ -635,7 +670,7 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
 
     _agentsify_files "$dir" "$agents_target"
     set -l files_status $status
-    _agentsify_skills "$dir"
+    _agentsify_skills "$dir" $link_back
     set -l skills_status $status
 
     set -l adopt_status 2
