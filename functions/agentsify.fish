@@ -4,14 +4,23 @@ Renames CLAUDE.md/GEMINI.md to AGENTS.md, keeping one that imports @AGENTS.md,
 and removes CLAUDE.md -> AGENTS.md symlinks (claude reads AGENTS.md in projects).
 Claude's config dir (\$CLAUDE_CONFIG_DIR, default ~/.claude) gets a CLAUDE.md
 importing @AGENTS.md, since claude reads only CLAUDE.md there.
-Merges .claude/.gemini/.codex skills/ into .agents/skills and links skills/ back.
+Merges .claude/.gemini/.codex skills/ into .agents/skills.
+Link-back directories are configured by link_back in
+~/.config/agentsify/config.toml (default: [\".claude\"]).
+Supported directories: .claude, .gemini, .codex; [] disables link creation.
+Existing links are preserved. Reading TOML requires Python 3.11+.
 Links entries listed in .agents/links.txt (AGENTS.md or skills/<name>) to the
 same paths under \$PROMPTS_DIR (default ~/.agents, cloned from
 legendu-net/agents if missing): AGENTS.md -> \$PROMPTS_DIR/AGENTS.md and
-.agents/skills/<name> -> \$PROMPTS_DIR/skills/<name>. --adopt moves an entry
-into \$PROMPTS_DIR first and records it in .agents/links.txt. --adopt-all adopts
+.agents/skills/<name> -> \$PROMPTS_DIR/skills/<name>. --upstream moves an entry
+into \$PROMPTS_DIR first and records it in .agents/links.txt. --upstream-all upstreams
 every local AGENTS.md or skill identical to its copy in \$PROMPTS_DIR.
-Syntax: agentsify [-a|--adopt ENTRY]... [--adopt-all] [dir]"
+Syntax: agentsify [--upstream ENTRY]... [--upstream-all] [dir]
+        agentsify upstream [-C|--directory DIR] [--all] ENTRY...
+        agentsify list [-C|--directory DIR]
+        agentsify link [-C|--directory DIR] [-i|--interactive] [SKILL...]
+Skill names may optionally start with skills/. Interactive linking uses fzf
+with multiple selection (Tab to select). list shows project and shared skills."
 end
 
 function _agentsify_kind --description 'Print the kind of a path: link, dir, file or missing'
@@ -195,6 +204,35 @@ function _agentsify_files --description 'Unify AI agent context files into AGENT
     return $conflict
 end
 
+function _agentsify_link_back --description 'Read and validate the configured skills link-back directories'
+    set -l config "$HOME/.config/agentsify/config.toml"
+    if not test -e "$config"
+        echo .claude
+        return 0
+    end
+    python3 -c '
+import sys
+import tomllib
+
+try:
+    with open(sys.argv[1], "rb") as stream:
+        config = tomllib.load(stream)
+    if config.keys() - {"link_back"}:
+        raise ValueError("supported setting: link_back")
+    tools = config.get("link_back", [".claude"])
+    if not isinstance(tools, list) or any(
+        not isinstance(tool, str) or tool not in (".claude", ".gemini", ".codex")
+        for tool in tools
+    ):
+        raise ValueError("link_back must be an array of .claude, .gemini, or .codex")
+except (OSError, ValueError) as error:
+    print(f"Error: {sys.argv[1]}: {error}", file=sys.stderr)
+    sys.exit(1)
+for tool in dict.fromkeys(tools):
+    print(tool)
+' "$config"
+end
+
 function _agentsify_skills --description 'Unify per-tool skills/ directories into .agents/skills'
     set -l dir "$argv[1]"
     set -l agents_skills "$dir/.agents/skills"
@@ -258,7 +296,7 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
             if test "$target" = ../.agents/skills
                 continue
             end
-            echo "Replacing $name/skills symlink that pointed to $target"
+            echo "Removing $name/skills symlink that pointed to $target"
             rm -- "$skills"
             or set conflict 1
         else
@@ -267,16 +305,14 @@ function _agentsify_skills --description 'Unify per-tool skills/ directories int
         end
     end
 
-    # Link skills/ back into every tool dir that already exists, even one
-    # that never had its own skills/, so it can see what other tools bring.
-    # A tool dir that doesn't exist at all is left alone rather than
-    # fabricated just to hold a symlink.
-    for name in $tool_names
+    # Create configured tool directories even if they did not have skills/.
+    for name in $argv[2..]
         if contains -- "$name" $aliased
             continue
         end
         set -l tool "$dir/$name"
-        if not test -d "$tool"
+        if not mkdir -p -- "$tool"
+            set conflict 1
             continue
         end
         set -l skills "$tool/skills"
@@ -307,6 +343,10 @@ function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning leg
         set dir "$HOME/.agents"
     end
 
+    if not test -e "$dir"; and test "$argv[1]" = existing
+        echo "Error: $dir does not exist." >&2
+        return 1
+    end
     if not test -e "$dir"
         if not mkdir -p -- (path dirname -- "$dir")
             return 1
@@ -327,7 +367,7 @@ function _agentsify_prompts_dir --description 'Resolve $PROMPTS_DIR, cloning leg
     # ~/.agents often already exists (e.g. created by other skill installers)
     # before legendu-net/agents is cloned there; refuse it rather than failing
     # later with confusing "not a real file" link errors.
-    if not test -e "$dir/.git"; and not test -d "$dir/.jj"
+    if test "$argv[1]" != existing; and not test -e "$dir/.git"; and not test -d "$dir/.jj"
         echo (set_color $fish_color_error)"Error: $dir exists but is not a git checkout; move it aside, clone legendu-net/agents there and move its contents back."(set_color normal) >&2
         return 1
     end
@@ -396,7 +436,7 @@ function _agentsify_gitignore_add --description 'Ensure a line is present in a d
     _agentsify_append_line "$file" "$line"
 end
 
-function _agentsify_adopt --description 'Move named project entries into $PROMPTS_DIR'
+function _agentsify_upstream --description 'Move named project entries into $PROMPTS_DIR'
     set -l dir "$argv[1]"
     set -l entries $argv[2..]
     _agentsify_guard_agents "$dir"
@@ -408,7 +448,7 @@ function _agentsify_adopt --description 'Move named project entries into $PROMPT
     for entry in $entries
         set -l info (_agentsify_link_entry "$entry")
         if test (count $info) -ne 2
-            echo (set_color $fish_color_error)"Error: '$entry' is not a supported entry (AGENTS.md or skills/<name>); cannot adopt it."(set_color normal) >&2
+            echo (set_color $fish_color_error)"Error: '$entry' is not a supported entry (AGENTS.md or skills/<name>); cannot upstream it."(set_color normal) >&2
             set conflict 1
             continue
         end
@@ -417,13 +457,13 @@ function _agentsify_adopt --description 'Move named project entries into $PROMPT
         set -l target "$prompts/$entry"
 
         if test (_agentsify_kind "$local") != $kind
-            echo (set_color $fish_color_error)"Error: $local is not a real $kind; cannot adopt it."(set_color normal) >&2
+            echo (set_color $fish_color_error)"Error: $local is not a real $kind; cannot upstream it."(set_color normal) >&2
             set conflict 1
             continue
         end
         # Run inside $PROMPTS_DIR, the "identical copy" is the file itself.
         if test "$(path resolve -- "$local")" = "$(path resolve -- "$target")"
-            echo (set_color $fish_color_error)"Error: $local is already in $prompts; cannot adopt it."(set_color normal) >&2
+            echo (set_color $fish_color_error)"Error: $local is already in $prompts; cannot upstream it."(set_color normal) >&2
             set conflict 1
             continue
         end
@@ -435,7 +475,7 @@ function _agentsify_adopt --description 'Move named project entries into $PROMPT
                 set conflict 1
                 continue
             end
-            set message "Adopted $entry into $prompts"
+            set message "Upstreamed $entry into $prompts"
         else if test "$target_kind" != $kind
             echo (set_color $fish_color_error)"Error: $target is not a real $kind."(set_color normal) >&2
             set conflict 1
@@ -460,13 +500,15 @@ function _agentsify_adopt --description 'Move named project entries into $PROMPT
                 continue
             end
         end
+        LC_ALL=C sort -o "$manifest" -- "$manifest"
+        or return 1
         echo "$message"
     end
 
     return $conflict
 end
 
-function _agentsify_adopt_all --description 'Adopt every local AGENTS.md or skill identical to its $PROMPTS_DIR copy'
+function _agentsify_upstream_all --description 'Upstream every local AGENTS.md or skill identical to its $PROMPTS_DIR copy'
     set -l dir "$argv[1]"
     _agentsify_guard_agents "$dir"
     or return 1
@@ -475,7 +517,7 @@ function _agentsify_adopt_all --description 'Adopt every local AGENTS.md or skil
     for skill in "$dir"/.agents/skills/*
         set -a candidates "skills/"(path basename -- "$skill")
     end
-    # Keep only real local copies, so nothing to adopt never clones prompts.
+    # Keep only real local copies, so nothing to upstream never clones prompts.
     set -l locals
     for entry in $candidates
         set -l info (_agentsify_link_entry "$entry")
@@ -490,8 +532,8 @@ function _agentsify_adopt_all --description 'Adopt every local AGENTS.md or skil
     set -l prompts (_agentsify_prompts_dir)
     or return 1
 
-    # Only identical copies are adopted; moving a new or diverged one into
-    # $PROMPTS_DIR is left to an explicit --adopt.
+    # Only identical copies are upstreamed; moving a new or diverged one into
+    # $PROMPTS_DIR is left to an explicit --upstream.
     set -l entries
     for entry in $locals
         set -l info (_agentsify_link_entry "$entry")
@@ -499,7 +541,7 @@ function _agentsify_adopt_all --description 'Adopt every local AGENTS.md or skil
         set -l target "$prompts/$entry"
         set -l target_kind (_agentsify_kind "$target")
         if test "$target_kind" = missing
-            echo "Skipped $entry; not in $prompts yet (use --adopt $entry to move it there)"
+            echo "Skipped $entry; not in $prompts yet (use --upstream $entry to move it there)"
         else if test "$target_kind" != $kind
             echo "Skipped $entry; $target is not a real $kind"
         else if test "$(path resolve -- "$dir/$info[1]")" = "$(path resolve -- "$target")"
@@ -514,7 +556,7 @@ function _agentsify_adopt_all --description 'Adopt every local AGENTS.md or skil
     if test (count $entries) -eq 0
         return 2
     end
-    _agentsify_adopt "$dir" $entries
+    _agentsify_upstream "$dir" $entries
 end
 
 function _agentsify_link --description 'Symlink entries listed in .agents/links.txt to $PROMPTS_DIR'
@@ -530,8 +572,11 @@ function _agentsify_link --description 'Symlink entries listed in .agents/links.
     _agentsify_guard_agents "$dir"
     or return 1
 
-    set -l prompts (_agentsify_prompts_dir)
-    or return 1
+    set -l prompts "$argv[2]"
+    if test -z "$prompts"
+        set prompts (_agentsify_prompts_dir)
+        or return 1
+    end
 
     set -l conflict 0
     while read -l line
@@ -558,7 +603,7 @@ function _agentsify_link --description 'Symlink entries listed in .agents/links.
         set -l link "$dir/$rel"
         set -l link_kind (_agentsify_kind "$link")
         if test "$link_kind" = $kind
-            echo (set_color $fish_color_error)"Error: $link is a real $kind; run 'agentsify --adopt $entry' first."(set_color normal) >&2
+            echo (set_color $fish_color_error)"Error: $link is a real $kind; run 'agentsify --upstream $entry' first."(set_color normal) >&2
             set conflict 1
             continue
         else if test "$link_kind" != link; and test "$link_kind" != missing
@@ -600,8 +645,162 @@ function _agentsify_link --description 'Symlink entries listed in .agents/links.
     return $conflict
 end
 
+function _agentsify_list --description 'Show project and shared skills with their locations'
+    set -l dir "$argv[1]"
+    set -l prompts "$PROMPTS_DIR"
+    if test -z "$prompts"
+        set prompts "$HOME/.agents"
+    end
+    printf 'SCOPE\tSKILL\tLOCATION\n'
+    for scope in project shared
+        set -l root "$dir/.agents/skills"
+        if test "$scope" = shared
+            set root "$prompts/skills"
+        end
+        for skill in "$root"/* "$root"/.*
+            if not test -d "$skill"; and not test -L "$skill"
+                continue
+            end
+            set -l location (path normalize -- "$skill")
+            if test -L "$skill"
+                set location "$location -> "(readlink -- "$skill")
+            end
+            printf '%s\t%s\t%s\n' "$scope" (path basename -- "$skill") "$location"
+        end
+    end
+end
+
+function _agentsify_link_skills --description 'Record and link selected shared skills in the project'
+    set -l dir "$argv[1]"
+    set -l interactive "$argv[2]"
+    set -l names $argv[3..]
+    _agentsify_guard_agents "$dir"
+    or return 1
+    set -l prompts (_agentsify_prompts_dir existing)
+    or return 1
+    if test "$interactive" = yes
+        set -l available
+        for skill in "$prompts"/skills/* "$prompts"/skills/.*
+            set -l name (path basename -- "$skill")
+            if test (_agentsify_kind "$skill") = dir; and test (_agentsify_kind "$dir/.agents/skills/$name") = missing
+                set -a available "$name"
+            end
+        end
+        if test (count $available) -gt 0
+            set -l selected (printf '%s\n' $available | fzf --multi --prompt='Link skills> ')
+            set -l selection_status $status
+            if test $selection_status -ne 0
+                # fzf returns 130 when the user cancels.
+                if test $selection_status -eq 130
+                    return 0
+                end
+                return $selection_status
+            end
+            set -a names $selected
+        end
+    end
+    if test (count $names) -eq 0
+        if test "$interactive" = yes
+            return 0
+        end
+        echo 'Error: specify at least one skill or use --interactive.' >&2
+        return 1
+    end
+    # Validate all selections before changing the manifest or creating links.
+    set -l entries
+    for name in $names
+        set name (string replace -r -- '^skills/' '' "$name")
+        if not _agentsify_valid_skill_name "$name"
+            echo "Error: '$name' is not a valid skill name." >&2
+            return 1
+        end
+        if test (_agentsify_kind "$prompts/skills/$name") != dir
+            echo "Error: $prompts/skills/$name is not a real directory." >&2
+            return 1
+        end
+        set -l local "$dir/.agents/skills/$name"
+        if test (_agentsify_kind "$local") != missing
+            echo "Error: $local already exists." >&2
+            return 1
+        end
+        if not contains -- "skills/$name" $entries
+            set -a entries "skills/$name"
+        end
+    end
+    mkdir -p -- "$dir/.agents"
+    or return 1
+    set -l manifest "$dir/.agents/links.txt"
+    for entry in $entries
+        if not test -f "$manifest"; or not grep -Fxq -- "$entry" "$manifest"
+            _agentsify_append_line "$manifest" "$entry"
+            or return 1
+        end
+    end
+    LC_ALL=C sort -o "$manifest" -- "$manifest"
+    or return 1
+    _agentsify_link "$dir" "$prompts"
+end
+
 function agentsify --description 'Unify AI agent context files into AGENTS.md and skills dirs into .agents/skills'
-    argparse h/help a/adopt=+ adopt-all -- $argv
+    if contains -- "$argv[1]" list link upstream
+        set -l subcommand "$argv[1]"
+        set -e argv[1]
+        argparse h/help C/directory= i/interactive all -- $argv
+        or return 1
+        if set -q _flag_help
+            _agentsify_usage
+            return 0
+        end
+        set -l dir .
+        if set -q _flag_directory
+            set dir "$_flag_directory"
+        end
+        if not test -d "$dir"
+            echo "Error: $dir is not a directory!" >&2
+            return 1
+        end
+        switch "$subcommand"
+            case list
+                if set -q _flag_interactive; or set -q _flag_all; or test (count $argv) -gt 0
+                    echo 'Error: list only accepts --directory.' >&2
+                    return 1
+                end
+                _agentsify_list "$dir"
+                return $status
+            case link
+                if set -q _flag_all
+                    echo 'Error: link does not accept --all.' >&2
+                    return 1
+                end
+                set -l interactive no
+                set -q _flag_interactive; and set interactive yes
+                _agentsify_link_skills "$dir" "$interactive" $argv
+                or return $status
+                return 0
+            case upstream
+                if set -q _flag_interactive
+                    echo 'Error: upstream does not accept --interactive.' >&2
+                    return 1
+                end
+                set -l options
+                for entry in $argv
+                    if test "$entry" != AGENTS.md; and not string match -q -- 'skills/*' "$entry"
+                        set entry "skills/$entry"
+                    end
+                    set -a options --upstream "$entry"
+                end
+                if set -q _flag_all
+                    set -a options --upstream-all
+                end
+                if test (count $options) -eq 0
+                    echo 'Error: specify an entry or --all to upstream.' >&2
+                    return 1
+                end
+                agentsify $options -- "$dir"
+                return $status
+        end
+    end
+    argparse h/help upstream=+ upstream-all -- $argv
     or return 1
     if set -q _flag_help
         _agentsify_usage
@@ -623,6 +822,10 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
         return 1
     end
 
+    # Validate configuration before any filesystem changes.
+    set -l link_back (_agentsify_link_back)
+    or return 1
+
     # An AGENTS.md listed in links.txt is expected to be a symlink into
     # $PROMPTS_DIR; tell _agentsify_files which target to accept.
     set -l agents_target ""
@@ -635,19 +838,19 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
 
     _agentsify_files "$dir" "$agents_target"
     set -l files_status $status
-    _agentsify_skills "$dir"
+    _agentsify_skills "$dir" $link_back
     set -l skills_status $status
 
-    set -l adopt_status 2
-    if set -q _flag_adopt
-        _agentsify_adopt "$dir" $_flag_adopt
-        set adopt_status $status
+    set -l upstream_status 2
+    if set -q _flag_upstream
+        _agentsify_upstream "$dir" $_flag_upstream
+        set upstream_status $status
     end
 
-    set -l adopt_all_status 2
-    if set -q _flag_adopt_all
-        _agentsify_adopt_all "$dir"
-        set adopt_all_status $status
+    set -l upstream_all_status 2
+    if set -q _flag_upstream_all
+        _agentsify_upstream_all "$dir"
+        set upstream_all_status $status
     end
 
     set -l link_status 2
@@ -656,11 +859,11 @@ function agentsify --description 'Unify AI agent context files into AGENTS.md an
         set link_status $status
     end
 
-    if test $files_status -eq 2; and test $skills_status -eq 2; and test $adopt_status -eq 2; and test $adopt_all_status -eq 2; and test $link_status -eq 2
+    if test $files_status -eq 2; and test $skills_status -eq 2; and test $upstream_status -eq 2; and test $upstream_all_status -eq 2; and test $link_status -eq 2
         echo (set_color $fish_color_error)"Error: no AGENTS.md, CLAUDE.md, GEMINI.md, agent skills directory or links.txt found in $dir!"(set_color normal) >&2
         return 1
     end
-    if test $files_status -eq 1; or test $skills_status -eq 1; or test $adopt_status -eq 1; or test $adopt_all_status -eq 1; or test $link_status -eq 1
+    if test $files_status -eq 1; or test $skills_status -eq 1; or test $upstream_status -eq 1; or test $upstream_all_status -eq 1; or test $link_status -eq 1
         return 1
     end
 
