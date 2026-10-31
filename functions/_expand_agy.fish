@@ -1,8 +1,8 @@
 function _expand_agy --argument-names dangerous
     # Build the 'agy' invocation, optionally with --dangerously-skip-permissions.
-    set -l cmd agy
+    set -l cmd "agy --remote-control"
     if test -n "$dangerous"
-        set cmd "agy --dangerously-skip-permissions"
+        set cmd "$cmd --dangerously-skip-permissions"
     end
     # Run directly when already inside the 'toolbx' container; otherwise wrap
     # with `toolbox run` against the jupyterhub-ds container.
