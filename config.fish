@@ -26,6 +26,8 @@ if status is-interactive
         set -gx VISUAL fresh
     end
     # =====================================================
+    set -gx NPM_CONFIG_PREFIX $HOME/.local
+    # =====================================================
     if command -q nvim
         abbr --add vim nvim
         abbr --add vi nvim
