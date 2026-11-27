@@ -4,10 +4,12 @@ Syntax: jj_sync_base [-h/--help] [bookmark]
 Args:
     -h/--help: Show the help doc.
     bookmark: The target bookmark. If specified, @- is only checked against it
-        (manual override). If not specified: @- is checked against 'dev'
-        (preferred) then 'main'; if @- has merged there, the working copy is
-        rebased onto it. Otherwise, the auto-created push bookmark on @- (from
-        'jj git push --change @-') is followed forward when it has advanced."
+        (manual override, including divergence recovery). If not specified: @- is
+        checked against the first existing bookmark among 'dev', 'main',
+        'master', and 'trunk'; if @- has merged there (or diverged from a merged
+        copy), the working copy is rebased/recovered onto it. Otherwise, the
+        auto-created push bookmark on @- (from 'jj git push --change @-') is
+        followed forward when it has advanced."
 end
 
 function _jj_sync_base_bookmark_exists --argument-names bookmark
@@ -189,6 +191,29 @@ function _jj_sync_base_recover_divergence --argument-names bookmark
     return 0
 end
 
+function _jj_sync_base_sync_target --argument-names bookmark
+    # Check whether @- has been merged into $bookmark (rebasing onto it if so)
+    # or is a divergent copy of a change already merged into $bookmark
+    # (recovering onto a fresh change id if safe).
+    #
+    # Returns 0 when @- was rebased or recovered, 1 when @- is neither merged
+    # into nor divergent with $bookmark (nothing to do), and 2 on error or when
+    # manual recovery is required.
+    _jj_sync_base_warn_if_merged "$bookmark"
+    set -l merged_status $status
+    if test $merged_status -eq 2
+        return 2
+    else if test $merged_status -eq 0
+        jj rebase --onto "$bookmark"
+        and return 0
+        return 2
+    end
+
+    # @- is not itself an ancestor of $bookmark, but its change may have been
+    # merged as a divergent sibling (PR merged, then @- rewritten locally).
+    _jj_sync_base_recover_divergence "$bookmark"
+end
+
 function jj_sync_base --description 'Check if @- has been merged/advanced and auto rebase if needed'
     argparse h/help -- $argv
     or return 1
@@ -210,10 +235,10 @@ function jj_sync_base --description 'Check if @- has been merged/advanced and au
     end
 
     # An explicit bookmark argument is used verbatim (manual override). Otherwise
-    # auto-detect a trunk bookmark ('dev' then 'main') and capture the auto-created
-    # push bookmark on @-. The push bookmark must be captured BEFORE the fetch,
-    # because the fetch may delete it (e.g. the PR was merged and its remote
-    # branch removed).
+    # auto-detect a trunk bookmark ('dev', 'main', 'master', or 'trunk') and
+    # capture the auto-created push bookmark on @-. The push bookmark must be
+    # captured BEFORE the fetch, because the fetch may delete it (e.g. the PR
+    # was merged and its remote branch removed).
     set -l explicit_bookmark ""
     set -l push_bookmark ""
 
@@ -240,47 +265,37 @@ function jj_sync_base --description 'Check if @- has been merged/advanced and au
         return $fetch_status
     end
 
-    # Manual override: keep the original behaviour of checking @- against the
-    # given bookmark only.
+    # Manual override: check @- against the given bookmark only (including
+    # divergence recovery), without falling through to push-bookmark tracking.
     if test -n "$explicit_bookmark"
-        _jj_sync_base_warn_if_merged "$explicit_bookmark"
-        set -l merged_status $status
-        if test $merged_status -eq 2
+        _jj_sync_base_sync_target "$explicit_bookmark"
+        set -l sync_status $status
+        if test $sync_status -eq 0
+            return 0
+        else if test $sync_status -eq 2
             return 1
-        else if test $merged_status -eq 0
-            jj rebase --onto $explicit_bookmark
-            return $status
         end
         echo (set_color green)"@- is not merged into "(set_color -o -i -u cyan)"$explicit_bookmark"(set_color normal)(set_color green)". Safe to continue working on it."(set_color normal)
         echo
         return 0
     end
 
-    # Auto mode. Trunk wins: if @- has merged into dev/main, rebase onto it.
+    # Auto mode. Trunk wins: if @- has merged into dev/main/master/trunk, rebase
+    # onto it (or recover divergence if a sibling copy was merged).
     set -l trunk ""
-    if _jj_sync_base_bookmark_exists dev
-        set trunk dev
-    else if _jj_sync_base_bookmark_exists main
-        set trunk main
+    for candidate in dev main master trunk
+        if _jj_sync_base_bookmark_exists $candidate
+            set trunk $candidate
+            break
+        end
     end
 
     if test -n "$trunk"
-        _jj_sync_base_warn_if_merged "$trunk"
-        set -l merged_status $status
-        if test $merged_status -eq 2
-            return 1
-        else if test $merged_status -eq 0
-            jj rebase --onto $trunk
-            return $status
-        end
-
-        # @- is not itself an ancestor of the trunk, but its change may have been
-        # merged as a divergent sibling (PR merged, then @- rewritten locally).
-        _jj_sync_base_recover_divergence "$trunk"
-        set -l recover_status $status
-        if test $recover_status -eq 0
+        _jj_sync_base_sync_target "$trunk"
+        set -l sync_status $status
+        if test $sync_status -eq 0
             return 0
-        else if test $recover_status -eq 2
+        else if test $sync_status -eq 2
             return 1
         end
     end
@@ -308,7 +323,7 @@ function jj_sync_base --description 'Check if @- has been merged/advanced and au
     end
 
     if test -z "$trunk"; and test -z "$push_bookmark"
-        echo (set_color $fish_color_error)"Error: Neither 'dev'/'main' nor a push bookmark on @- was found. Please specify a bookmark name."(set_color normal) >&2
+        echo (set_color $fish_color_error)"Error: Neither 'dev'/'main'/'master'/'trunk' nor a push bookmark on @- was found. Please specify a bookmark name."(set_color normal) >&2
         return 1
     end
 
